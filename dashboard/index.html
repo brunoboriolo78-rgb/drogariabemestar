@@ -8,6 +8,44 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
+  #login-screen {
+    position: fixed; inset: 0;
+    background: #f0f4ff;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 999;
+  }
+  .login-box {
+    background: #fff;
+    border: 1px solid #c5d0f0;
+    border-radius: 16px;
+    padding: 40px;
+    width: 360px;
+    text-align: center;
+    box-shadow: 0 8px 32px rgba(35,72,212,.08);
+  }
+  .login-logo { font-size: 32px; margin-bottom: 8px; }
+  .login-title { font-size: 20px; font-weight: 600; color: #1a2150; margin-bottom: 4px; }
+  .login-sub { font-size: 13px; color: #5a6a9a; margin-bottom: 28px; }
+  .login-input {
+    width: 100%; padding: 12px 16px;
+    border: 1px solid #c5d0f0; border-radius: 8px;
+    font-size: 15px; color: #1a2150;
+    background: #f0f4ff; outline: none;
+    margin-bottom: 12px; box-sizing: border-box;
+    text-align: center; letter-spacing: 4px;
+    font-family: inherit;
+  }
+  .login-input:focus { border-color: #2348d4; }
+  .login-btn {
+    width: 100%; padding: 12px;
+    background: #2348d4; color: #fff;
+    border: none; border-radius: 8px;
+    font-size: 15px; font-weight: 600;
+    cursor: pointer; font-family: inherit;
+    transition: background .15s;
+  }
+  .login-btn:hover { background: #1a38c4; }
+  .login-error { color: #cc2020; font-size: 13px; margin-top: 8px; display:none; }
   :root {
     --bg:       #f0f4ff;
     --bg2:      #ffffff;
@@ -327,6 +365,16 @@
 <body>
 
 <!-- SIDEBAR -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">💊</div>
+    <div class="login-title">RecorrênciaFarma</div>
+    <div class="login-sub">Farmácia Bem Estar — Acesso restrito</div>
+    <input class="login-input" type="password" id="inp-senha" placeholder="••••••••"> fazerLogin()">
+    <button class="login-btn" id="btn-login">Entrar</button>
+    <div class="login-error" id="login-erro">Senha incorreta. Tente novamente.</div>
+  </div>
+</div>
 <aside class="sidebar">
   <div class="sidebar-logo">
     <span>💊 RecorrênciaFarma</span>
@@ -349,6 +397,9 @@
   </div>
 
   <div class="sidebar-section" style="margin-top:8px">Configuração</div>
+  <div class="nav-item" onclick="showPage('fidelidade', this)">
+  <span class="nav-icon">🏆</span> Fidelidade
+</div>
   <div class="nav-item" onclick="showPage('medicamentos', this)">
     <span class="nav-icon">💊</span> Medicamentos
   </div>
@@ -603,6 +654,53 @@
       </div>
     </div>
 
+    <!-- ===== FIDELIDADE ===== -->
+<div class="page" id="page-fidelidade">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+    <div>
+      <div style="font-size:15px;font-weight:500">Programa de Fidelidade</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:2px">Ranking de clientes por pontos</div>
+    </div>
+  </div>
+
+  <div class="metrics" style="grid-template-columns:repeat(4,1fr);margin-bottom:24px">
+    <div class="metric-card">
+      <div class="metric-label">Total de clientes</div>
+      <div class="metric-value" style="color:var(--accent2)" id="fid-total">0</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">🥉 Bronze</div>
+      <div class="metric-value" style="color:#cd7f32" id="fid-bronze">0</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">🥈 Prata</div>
+      <div class="metric-value" style="color:#a0a0a0" id="fid-prata">0</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">🥇 Ouro</div>
+      <div class="metric-value" style="color:#ffd700" id="fid-ouro">0</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><span class="card-title">🏆 Ranking de clientes</span></div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Cliente</th>
+            <th>WhatsApp</th>
+            <th>Nível</th>
+            <th>Pontos</th>
+            <th>Streak</th>
+          </tr>
+        </thead>
+        <tbody id="tbody-ranking"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
     <!-- ===== CONFIG ===== -->
     <div class="page" id="page-config">
       <div style="font-size:15px;font-weight:500;margin-bottom:20px">Configurações da farmácia</div>
@@ -782,8 +880,35 @@
     </div>
   </div>
 </div>
-
 <script>
+
+const SENHA_CORRETA = '011125';
+
+function fazerLogin() {
+  const senha = document.getElementById('inp-senha').value;
+  if(senha === SENHA_CORRETA) {
+    document.getElementById('login-screen').style.display = 'none';
+    sessionStorage.setItem('logado', 'sim');
+  } else {
+    document.getElementById('login-erro').style.display = 'block';
+    document.getElementById('inp-senha').value = '';
+    document.getElementById('inp-senha').focus();
+  }
+}
+
+function verificarLogin() {
+  if(sessionStorage.getItem('logado') !== 'sim') {
+    document.getElementById('login-screen').style.display = 'flex';
+  } else {
+    document.getElementById('login-screen').style.display = 'none';
+  }
+}
+
+document.getElementById('btn-login').addEventListener('click', fazerLogin);
+document.getElementById('inp-senha').addEventListener('keydown', function(e) {
+  if(e.key === 'Enter') fazerLogin();
+});
+
 // ─── DADOS DEMO ─────────────────────────────────────────────
 const clientes = [
   { id:1, nome:'João da Silva',     whatsapp:'5519999990001', remedios:2, ultimo:'Há 3 dias',  ativo:true },
@@ -1003,19 +1128,46 @@ function renderMeds() {
     </tr>
   `).join('');
 }
-function filtrarClientes() {
-  const busca = document.getElementById('inp-busca-cliente').value.toLowerCase();
-  const lista = document.getElementById('lista-clientes');
-  if(!busca || busca.length < 2) { lista.style.display='none'; return; }
-  const filtrados = clientes.filter(c => c.nome.toLowerCase().includes(busca) || c.whatsapp.includes(busca));
-  if(!filtrados.length) { lista.style.display='none'; return; }
-  lista.style.display='block';
-  lista.innerHTML = filtrados.map(c => `
-    <div onclick="selecionarCliente('${c.id}','${c.nome}')" style="padding:10px 14px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center" onmouseover="this.style.background='var(--bg2)'" onmouseout="this.style.background='transparent'">
-      <span>${c.nome}</span>
-      <span style="font-size:11px;color:var(--muted)">${c.whatsapp}</span>
-    </div>
+
+async function carregarFidelidade() {
+  const { data, error } = await _sb.from('vw_ranking_clientes').select('*');
+  if(error || !data) return;
+
+  // Métricas
+  document.getElementById('fid-total').textContent = data.length;
+  document.getElementById('fid-bronze').textContent = data.filter(c => c.nivel === 'bronze').length;
+  document.getElementById('fid-prata').textContent  = data.filter(c => c.nivel === 'prata').length;
+  document.getElementById('fid-ouro').textContent   = data.filter(c => c.nivel === 'ouro').length;
+
+  // Ranking
+  const nivelBadge = {
+    bronze:   '<span class="badge" style="background:rgba(205,127,50,.15);color:#cd7f32">🥉 Bronze</span>',
+    prata:    '<span class="badge" style="background:rgba(160,160,160,.15);color:#808080">🥈 Prata</span>',
+    ouro:     '<span class="badge" style="background:rgba(255,215,0,.15);color:#b8860b">🥇 Ouro</span>',
+    diamante: '<span class="badge" style="background:rgba(0,191,255,.15);color:#0080c0">💎 Diamante</span>',
+  };
+
+  document.getElementById('tbody-ranking').innerHTML = data.map((c, i) => `
+    <tr>
+      <td style="font-weight:600;color:var(--muted)">${i + 1}</td>
+      <td><b>${c.nome}</b></td>
+      <td><span class="mono">${c.whatsapp}</span></td>
+      <td>${nivelBadge[c.nivel] || nivelBadge.bronze}</td>
+      <td><b style="color:var(--accent2)">${c.pontos}</b> pts</td>
+      <td>${c.streak > 0 ? `🔥 ${c.streak} meses` : '<span style="color:var(--muted)">—</span>'}</td>
+    </tr>
   `).join('');
+}
+function showPage(id, el) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  if(el) el.classList.add('active');
+  const titles = { dashboard:'Dashboard', clientes:'Clientes', compras:'Compras',
+                   alertas:'Alertas', medicamentos:'Medicamentos', fidelidade:'Fidelidade', config:'Configurações' };
+  document.getElementById('page-title').textContent = titles[id]||id;
+  if(id === 'fidelidade') carregarFidelidade();
+
 }
 
 function selecionarCliente(id, nome) {
