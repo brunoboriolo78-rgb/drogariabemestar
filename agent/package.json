@@ -1,0 +1,19 @@
+{
+  "name": "recorrencia-farma-agent",
+  "version": "1.0.0",
+  "description": "Agente de IA para recompra automática via WhatsApp — RecorrênciaFarma",
+  "main": "zapi_webhook.js",
+  "scripts": {
+    "start": "node zapi_webhook.js",
+    "dev": "node --watch zapi_webhook.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
+    "@supabase/supabase-js": "^2.49.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

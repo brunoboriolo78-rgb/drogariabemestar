@@ -1,0 +1,1153 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RecorrênciaFarma — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:       #0e1117;
+    --bg2:      #161b25;
+    --bg3:      #1e2536;
+    --border:   #2a3347;
+    --border2:  #3a4a63;
+    --text:     #e8ecf4;
+    --muted:    #7a8aaa;
+    --accent:   #3b82f6;
+    --accent2:  #60a5fa;
+    --green:    #22c55e;
+    --amber:    #f59e0b;
+    --red:      #ef4444;
+    --purple:   #a78bfa;
+    --card-r:   12px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-size: 14px; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+  }
+
+  /* SIDEBAR */
+  .sidebar {
+    width: 220px;
+    min-height: 100vh;
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 24px 0;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    z-index: 10;
+  }
+  .sidebar-logo {
+    padding: 0 20px 28px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+  .sidebar-logo span {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: -0.3px;
+  }
+  .sidebar-logo .pill {
+    display: inline-block;
+    background: var(--accent);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 1px 6px;
+    border-radius: 4px;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 20px;
+    color: var(--muted);
+    font-size: 13.5px;
+    font-weight: 400;
+    cursor: pointer;
+    transition: all .15s;
+    border-left: 2px solid transparent;
+  }
+  .nav-item:hover { color: var(--text); background: var(--bg3); }
+  .nav-item.active {
+    color: var(--accent2);
+    background: rgba(59,130,246,.08);
+    border-left-color: var(--accent);
+    font-weight: 500;
+  }
+  .nav-icon { font-size: 15px; width: 18px; text-align: center; }
+  .sidebar-section {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    color: var(--muted);
+    padding: 16px 20px 6px;
+    text-transform: uppercase;
+  }
+  .sidebar-footer {
+    margin-top: auto;
+    padding: 16px 20px;
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .farmacia-badge {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text);
+    padding-bottom: 2px;
+  }
+
+  /* MAIN */
+  .main {
+    margin-left: 220px;
+    flex: 1;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  .topbar {
+    height: 56px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 28px;
+    background: var(--bg);
+    position: sticky;
+    top: 0;
+    z-index: 5;
+  }
+  .topbar-title { font-size: 15px; font-weight: 500; }
+  .topbar-actions { display: flex; gap: 10px; align-items: center; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: all .15s;
+    font-family: inherit;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: #2563eb; }
+  .btn-ghost {
+    background: var(--bg3);
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+  .btn-ghost:hover { color: var(--text); border-color: var(--border2); }
+  .btn-danger { background: rgba(239,68,68,.12); color: var(--red); border: 1px solid rgba(239,68,68,.2); }
+  .btn-danger:hover { background: rgba(239,68,68,.2); }
+  .btn-sm { padding: 4px 10px; font-size: 12px; }
+  .btn-green { background: rgba(34,197,94,.12); color: var(--green); border: 1px solid rgba(34,197,94,.2); }
+  .btn-green:hover { background: rgba(34,197,94,.2); }
+
+  /* CONTENT */
+  .content { padding: 28px; flex: 1; }
+
+  /* PAGE SECTIONS */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* METRICS */
+  .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+  .metric-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--card-r);
+    padding: 20px;
+  }
+  .metric-label { font-size: 11.5px; color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 10px; }
+  .metric-value { font-size: 28px; font-weight: 600; letter-spacing: -1px; line-height: 1; }
+  .metric-sub { font-size: 12px; color: var(--muted); margin-top: 6px; }
+  .metric-trend { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; font-weight: 500; }
+  .trend-up { color: var(--green); }
+  .trend-dn { color: var(--red); }
+
+  /* CARDS GRID */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--card-r);
+  }
+  .card-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .card-title { font-size: 13px; font-weight: 500; }
+  .card-body { padding: 20px; }
+
+  /* TABLE */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    font-size: 11px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: .5px; color: var(--muted);
+    padding: 10px 16px; text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,.02); }
+
+  /* BADGES */
+  .badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 2px 8px; border-radius: 20px;
+    font-size: 11px; font-weight: 500;
+  }
+  .badge-green { background: rgba(34,197,94,.12); color: var(--green); }
+  .badge-amber { background: rgba(245,158,11,.12); color: var(--amber); }
+  .badge-red   { background: rgba(239,68,68,.12);  color: var(--red); }
+  .badge-blue  { background: rgba(59,130,246,.12); color: var(--accent2); }
+  .badge-muted { background: var(--bg3); color: var(--muted); }
+
+  /* PROGRESS BAR */
+  .progress-wrap { background: var(--bg3); border-radius: 4px; height: 6px; overflow: hidden; }
+  .progress-bar { height: 100%; border-radius: 4px; transition: width .5s; }
+
+  /* MODAL */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.6);
+    z-index: 50;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--bg2);
+    border: 1px solid var(--border2);
+    border-radius: 16px;
+    width: 480px;
+    max-width: 96vw;
+    animation: slideUp .2s ease;
+  }
+  @keyframes slideUp { from { transform: translateY(16px); opacity: 0; } to { transform: none; opacity: 1; } }
+  .modal-header {
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .modal-title { font-size: 15px; font-weight: 600; }
+  .modal-close { background: none; border: none; color: var(--muted); font-size: 20px; cursor: pointer; line-height: 1; }
+  .modal-body { padding: 24px; display: flex; flex-direction: column; gap: 16px; }
+  .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; gap: 10px; justify-content: flex-end; }
+
+  /* FORM */
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field label { font-size: 12px; font-weight: 500; color: var(--muted); }
+  .field input, .field select, .field textarea {
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 13px;
+    padding: 9px 12px;
+    outline: none;
+    transition: border-color .15s;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); }
+  .field select option { background: var(--bg2); }
+  .fields-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  /* ALERT TIMELINE */
+  .timeline { display: flex; flex-direction: column; gap: 0; }
+  .timeline-item { display: flex; gap: 14px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .timeline-item:last-child { border-bottom: none; }
+  .timeline-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    margin-top: 4px; flex-shrink: 0;
+  }
+  .timeline-info { flex: 1; }
+  .timeline-main { font-size: 13px; font-weight: 400; line-height: 1.4; }
+  .timeline-meta { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+
+  /* CHART BARS */
+  .bar-chart { display: flex; align-items: flex-end; gap: 8px; height: 80px; }
+  .bar-group { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .bar { width: 100%; border-radius: 4px 4px 0 0; transition: height .4s; }
+  .bar-label { font-size: 10px; color: var(--muted); }
+
+  /* EMPTY STATE */
+  .empty { padding: 48px 24px; text-align: center; color: var(--muted); font-size: 13px; }
+  .empty-icon { font-size: 32px; margin-bottom: 12px; }
+
+  /* ALERT INDICATOR */
+  .alert-today-banner {
+    background: linear-gradient(135deg, rgba(245,158,11,.08), rgba(245,158,11,.03));
+    border: 1px solid rgba(245,158,11,.25);
+    border-radius: var(--card-r);
+    padding: 14px 20px;
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 24px;
+  }
+  .alert-today-left { display: flex; align-items: center; gap: 10px; }
+  .alert-icon { font-size: 18px; }
+
+  /* TAGS */
+  .tag-controlado { color: var(--red); font-size: 11px; }
+  .tag-comum { color: var(--muted); font-size: 11px; }
+  .tag-tarja { color: var(--amber); font-size: 11px; }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+  /* MINI STATS ROW */
+  .mini-stats { display: flex; gap: 24px; }
+  .mini-stat { text-align: center; }
+  .mini-stat-val { font-size: 22px; font-weight: 600; }
+  .mini-stat-lbl { font-size: 11px; color: var(--muted); }
+
+  .mono { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <span>💊 RecorrênciaFarma</span>
+    <span class="pill">MVP</span>
+  </div>
+
+  <div class="sidebar-section">Principal</div>
+  <div class="nav-item active" onclick="showPage('dashboard', this)">
+    <span class="nav-icon">📊</span> Dashboard
+  </div>
+  <div class="nav-item" onclick="showPage('clientes', this)">
+    <span class="nav-icon">👥</span> Clientes
+  </div>
+  <div class="nav-item" onclick="showPage('compras', this)">
+    <span class="nav-icon">🛒</span> Compras
+  </div>
+  <div class="nav-item" onclick="showPage('alertas', this)">
+    <span class="nav-icon">🔔</span> Alertas
+    <span id="alertas-badge" class="badge badge-amber" style="margin-left:auto;font-size:10px">3</span>
+  </div>
+
+  <div class="sidebar-section" style="margin-top:8px">Configuração</div>
+  <div class="nav-item" onclick="showPage('medicamentos', this)">
+    <span class="nav-icon">💊</span> Medicamentos
+  </div>
+  <div class="nav-item" onclick="showPage('config', this)">
+    <span class="nav-icon">⚙️</span> Configurações
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="farmacia-badge">Farmácia São João</div>
+    <div>Plano Básico • Limeira–SP</div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="topbar">
+    <span class="topbar-title" id="page-title">Dashboard</span>
+    <div class="topbar-actions">
+      <button class="btn btn-ghost btn-sm" onclick="simularAlerta()">⚡ Simular alerta</button>
+      <button class="btn btn-primary btn-sm" onclick="openModal('modal-compra')">+ Nova compra</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ===== DASHBOARD ===== -->
+    <div class="page active" id="page-dashboard">
+
+      <div class="alert-today-banner">
+        <div class="alert-today-left">
+          <span class="alert-icon">⚠️</span>
+          <div>
+            <div style="font-size:13px;font-weight:500;color:var(--amber)">3 alertas para enviar hoje</div>
+            <div style="font-size:12px;color:var(--muted)">Remédios que vencem nos próximos 2 dias</div>
+          </div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="showPage('alertas', null)">Ver alertas →</button>
+      </div>
+
+      <div class="metrics">
+        <div class="metric-card">
+          <div class="metric-label">Clientes ativos</div>
+          <div class="metric-value" style="color:var(--accent2)">47</div>
+          <div class="metric-sub"><span class="metric-trend trend-up">↑ +3</span> este mês</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Alertas enviados</div>
+          <div class="metric-value" style="color:var(--purple)">128</div>
+          <div class="metric-sub">últimos 30 dias</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Taxa de recompra</div>
+          <div class="metric-value" style="color:var(--green)">68%</div>
+          <div class="metric-sub"><span class="metric-trend trend-up">↑ +5%</span> vs mês anterior</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Receita recuperada</div>
+          <div class="metric-value" style="color:var(--amber)">R$4.2k</div>
+          <div class="metric-sub">este mês via alertas</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <!-- Alertas recentes -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Atividade recente</span>
+            <span class="badge badge-muted">hoje</span>
+          </div>
+          <div class="card-body" style="padding:0 20px">
+            <div class="timeline" id="timeline-feed">
+              <!-- preenchido por JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Recompra por mês (bar chart simples) -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Recompras por semana</span>
+            <span class="badge badge-green">+12% mês</span>
+          </div>
+          <div class="card-body">
+            <div class="bar-chart" id="bar-chart"></div>
+            <div style="display:flex;justify-content:space-between;margin-top:6px">
+              <span style="font-size:10px;color:var(--muted)">Sem 1</span>
+              <span style="font-size:10px;color:var(--muted)">Sem 2</span>
+              <span style="font-size:10px;color:var(--muted)">Sem 3</span>
+              <span style="font-size:10px;color:var(--muted)">Sem 4</span>
+            </div>
+            <div style="margin-top:20px;display:flex;gap:24px">
+              <div>
+                <div style="font-size:11px;color:var(--muted)">Alertas enviados</div>
+                <div style="font-size:20px;font-weight:600;color:var(--accent2)">38</div>
+              </div>
+              <div>
+                <div style="font-size:11px;color:var(--muted)">Convertidos</div>
+                <div style="font-size:20px;font-weight:600;color:var(--green)">26</div>
+              </div>
+              <div>
+                <div style="font-size:11px;color:var(--muted)">Taxa</div>
+                <div style="font-size:20px;font-weight:600;color:var(--amber)">68%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top medicamentos -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Medicamentos com mais alertas</span>
+        </div>
+        <div class="card-body" style="display:flex;flex-direction:column;gap:12px">
+          <div id="top-meds"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== CLIENTES ===== -->
+    <div class="page" id="page-clientes">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+        <div>
+          <div style="font-size:15px;font-weight:500">Clientes cadastrados</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">47 clientes ativos</div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="openModal('modal-cliente')">+ Novo cliente</button>
+      </div>
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>WhatsApp</th>
+                <th>Remédios</th>
+                <th>Último alerta</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="tbody-clientes"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== COMPRAS ===== -->
+    <div class="page" id="page-compras">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+        <div>
+          <div style="font-size:15px;font-weight:500">Compras registradas</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">Histórico de vendas com controle de vencimento</div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="openModal('modal-compra')">+ Nova compra</button>
+      </div>
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Cliente</th>
+                <th>Medicamento</th>
+                <th>Compra</th>
+                <th>Fim</th>
+                <th>Alerta em</th>
+                <th>Dias restantes</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-compras"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== ALERTAS ===== -->
+    <div class="page" id="page-alertas">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+        <div>
+          <div style="font-size:15px;font-weight:500">Central de alertas</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">Gerencie os disparos automáticos de WhatsApp</div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-ghost btn-sm">Filtrar</button>
+          <button class="btn btn-primary btn-sm" onclick="enviarTodosAlertas()">▶ Enviar todos hoje</button>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-header"><span class="card-title">🔔 Para enviar hoje</span></div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Cliente</th>
+                <th>Medicamento</th>
+                <th>Tipo</th>
+                <th>Vence em</th>
+                <th>Mensagem</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="tbody-alertas-hoje"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><span class="card-title">Histórico de alertas</span></div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Cliente</th>
+                <th>Medicamento</th>
+                <th>Enviado em</th>
+                <th>Resposta</th>
+                <th>Converteu</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-alertas-hist"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== MEDICAMENTOS ===== -->
+    <div class="page" id="page-medicamentos">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+        <div>
+          <div style="font-size:15px;font-weight:500">Catálogo de medicamentos</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">Gerencie os remédios cadastrados</div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="openModal('modal-med')">+ Novo medicamento</button>
+      </div>
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Princípio Ativo</th>
+                <th>Tipo</th>
+                <th>Receita</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="tbody-meds"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== CONFIG ===== -->
+    <div class="page" id="page-config">
+      <div style="font-size:15px;font-weight:500;margin-bottom:20px">Configurações da farmácia</div>
+      <div class="card" style="max-width:520px">
+        <div class="card-body" style="display:flex;flex-direction:column;gap:16px">
+          <div class="field">
+            <label>Nome da farmácia</label>
+            <input type="text" value="Farmácia São João">
+          </div>
+          <div class="field">
+            <label>Telefone / WhatsApp da farmácia</label>
+            <input type="text" value="(19) 3333-0000">
+          </div>
+          <div class="field">
+            <label>Dias de antecedência para alertar</label>
+            <select>
+              <option>1 dia antes</option>
+              <option selected>2 dias antes</option>
+              <option>3 dias antes</option>
+              <option>5 dias antes</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Token Z-API (WhatsApp)</label>
+            <input type="text" placeholder="Cole aqui o token da Z-API">
+          </div>
+          <div class="field">
+            <label>Horário de envio dos alertas</label>
+            <select>
+              <option>08:00</option>
+              <option selected>09:00</option>
+              <option>10:00</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" style="align-self:flex-start">Salvar configurações</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end content -->
+</main>
+
+<!-- ===== MODAL: NOVA COMPRA ===== -->
+<div class="modal-overlay" id="modal-compra">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Registrar nova compra</span>
+      <button class="modal-close" onclick="closeModal('modal-compra')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <label>Cliente</label>
+        <select id="sel-cliente">
+          <option value="">Selecione um cliente...</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Medicamento</label>
+        <select id="sel-med">
+          <option value="">Selecione um medicamento...</option>
+        </select>
+      </div>
+      <div class="fields-row">
+        <div class="field">
+          <label>Data da compra</label>
+          <input type="date" id="inp-data-compra">
+        </div>
+        <div class="field">
+          <label>Duração (dias)</label>
+          <input type="number" id="inp-duracao" value="30" min="1">
+        </div>
+      </div>
+      <div class="field">
+        <label>Quantidade (caixas)</label>
+        <input type="number" id="inp-qtd" value="1" min="1">
+      </div>
+      <div class="field">
+        <label>Observação (opcional)</label>
+        <textarea rows="2" placeholder="Ex: receita válida até..."></textarea>
+      </div>
+      <div style="background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.2);border-radius:8px;padding:12px;font-size:12px;color:var(--accent2)">
+        💡 O alerta será disparado automaticamente 2 dias antes do remédio acabar.
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-compra')">Cancelar</button>
+      <button class="btn btn-primary" onclick="registrarCompra()">Registrar compra</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL: NOVO CLIENTE ===== -->
+<div class="modal-overlay" id="modal-cliente">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Cadastrar cliente</span>
+      <button class="modal-close" onclick="closeModal('modal-cliente')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <label>Nome completo</label>
+        <input type="text" id="inp-cli-nome" placeholder="Ex: João da Silva">
+      </div>
+      <div class="fields-row">
+        <div class="field">
+          <label>WhatsApp</label>
+          <input type="text" id="inp-cli-wpp" placeholder="5519999990001">
+        </div>
+        <div class="field">
+          <label>CPF (opcional)</label>
+          <input type="text" id="inp-cli-cpf" placeholder="000.000.000-00">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-cliente')">Cancelar</button>
+      <button class="btn btn-primary" onclick="cadastrarCliente()">Cadastrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL: NOVO MEDICAMENTO ===== -->
+<div class="modal-overlay" id="modal-med">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Cadastrar medicamento</span>
+      <button class="modal-close" onclick="closeModal('modal-med')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <label>Nome comercial</label>
+        <input type="text" id="inp-med-nome" placeholder="Ex: Losartana 50mg">
+      </div>
+      <div class="field">
+        <label>Princípio ativo</label>
+        <input type="text" id="inp-med-pa" placeholder="Ex: Losartana Potássica">
+      </div>
+      <div class="fields-row">
+        <div class="field">
+          <label>Tipo</label>
+          <select id="inp-med-tipo">
+            <option value="comum">Comum</option>
+            <option value="controlado">Controlado</option>
+            <option value="tarja_preta">Tarja preta</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Exige receita?</label>
+          <select id="inp-med-receita">
+            <option value="nao">Não</option>
+            <option value="sim">Sim</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-med')">Cancelar</button>
+      <button class="btn btn-primary" onclick="cadastrarMed()">Cadastrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL: MENSAGEM ALERTA ===== -->
+<div class="modal-overlay" id="modal-alerta">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Preview da mensagem</span>
+      <button class="modal-close" onclick="closeModal('modal-alerta')">×</button>
+    </div>
+    <div class="modal-body">
+      <div style="background:var(--bg3);border-radius:10px;padding:16px;font-size:13px;line-height:1.6;white-space:pre-wrap;color:var(--text)" id="preview-msg"></div>
+      <div style="font-size:12px;color:var(--muted)">Esta mensagem será enviada via WhatsApp para o cliente.</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-alerta')">Cancelar</button>
+      <button class="btn btn-green" id="btn-confirmar-alerta">✓ Confirmar envio</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── DADOS DEMO ─────────────────────────────────────────────
+const clientes = [
+  { id:1, nome:'João da Silva',     whatsapp:'5519999990001', remedios:2, ultimo:'Há 3 dias',  ativo:true },
+  { id:2, nome:'Maria Fernandes',   whatsapp:'5519999990002', remedios:1, ultimo:'Hoje',       ativo:true },
+  { id:3, nome:'Carlos Oliveira',   whatsapp:'5519999990003', remedios:3, ultimo:'Há 1 semana',ativo:true },
+  { id:4, nome:'Ana Paula Costa',   whatsapp:'5519999990004', remedios:1, ultimo:'Há 2 dias',  ativo:true },
+  { id:5, nome:'Roberto Mendes',    whatsapp:'5519999990005', remedios:2, ultimo:'Nunca',      ativo:true },
+];
+
+const medicamentos = [
+  { id:1, nome:'Losartana 50mg',    pa:'Losartana Potássica',  tipo:'controlado', receita:true  },
+  { id:2, nome:'Metformina 850mg',  pa:'Metformina HCl',       tipo:'comum',      receita:false },
+  { id:3, nome:'Atorvastatina 20mg',pa:'Atorvastatina Cálcica',tipo:'comum',      receita:false },
+  { id:4, nome:'Clonazepam 2mg',    pa:'Clonazepam',           tipo:'tarja_preta',receita:true  },
+  { id:5, nome:'Omeprazol 20mg',    pa:'Omeprazol',            tipo:'comum',      receita:false },
+];
+
+const hoje = new Date();
+function addDias(d, n) { const r=new Date(d); r.setDate(r.getDate()+n); return r; }
+function fmtDate(d) { return d.toLocaleDateString('pt-BR'); }
+function diasAte(d) { return Math.round((d - hoje) / 86400000); }
+
+const compras = [
+  { id:1, clienteId:2, medId:1, dataCompra:addDias(hoje,-28), duracao:30, qtd:1 },
+  { id:2, clienteId:1, medId:2, dataCompra:addDias(hoje,-27), duracao:30, qtd:1 },
+  { id:3, clienteId:4, medId:3, dataCompra:addDias(hoje,-29), duracao:30, qtd:1 },
+  { id:4, clienteId:3, medId:4, dataCompra:addDias(hoje,-10), duracao:30, qtd:2 },
+  { id:5, clienteId:5, medId:1, dataCompra:addDias(hoje,-5),  duracao:30, qtd:1 },
+  { id:6, clienteId:1, medId:5, dataCompra:addDias(hoje,-20), duracao:30, qtd:1 },
+];
+
+compras.forEach(c => {
+  c.dataFim   = addDias(c.dataCompra, c.duracao);
+  c.dataAlerta= addDias(c.dataFim, -2);
+  c.diasRestantes = diasAte(c.dataFim);
+});
+
+const alertasHoje = compras.filter(c => {
+  const da = diasAte(c.dataAlerta);
+  return da >= -1 && da <= 1;
+});
+
+const alertasHist = [
+  { cliente:'João da Silva',    med:'Metformina 850mg',  data:'22/04/2025', resposta:'Sim, pode separar!', conv:true  },
+  { cliente:'Carla Souza',      med:'Omeprazol 20mg',    data:'20/04/2025', resposta:'Obrigada!',          conv:true  },
+  { cliente:'Pedro Lima',       med:'Losartana 50mg',    data:'18/04/2025', resposta:'Já comprei em outro',conv:false },
+  { cliente:'Ana Paula Costa',  med:'Atorvastatina 20mg',data:'15/04/2025', resposta:'Sim!',               conv:true  },
+];
+
+const timeline = [
+  { cor:'var(--green)',  msg:'Recompra confirmada — <b>Maria Fernandes</b> (Losartana)',    meta:'há 12 min' },
+  { cor:'var(--accent)',  msg:'Alerta enviado — <b>João da Silva</b> (Metformina 850mg)',    meta:'há 35 min' },
+  { cor:'var(--amber)',  msg:'Alerta enviado — <b>Ana Paula Costa</b> (Atorvastatina)',     meta:'há 1h' },
+  { cor:'var(--muted)',  msg:'Novo cliente cadastrado — <b>Roberto Mendes</b>',              meta:'há 2h' },
+  { cor:'var(--green)',  msg:'Recompra confirmada — <b>Carla Souza</b> (Omeprazol 20mg)',   meta:'há 3h' },
+];
+
+const topMeds = [
+  { nome:'Losartana 50mg',     count:18, pct:72 },
+  { nome:'Metformina 850mg',   count:14, pct:56 },
+  { nome:'Atorvastatina 20mg', count:10, pct:40 },
+  { nome:'Clonazepam 2mg',     count:7,  pct:28 },
+];
+
+const barData = [
+  { label:'Sem 1', alertas:8, conv:5 },
+  { label:'Sem 2', alertas:11,conv:7 },
+  { label:'Sem 3', alertas:9, conv:6 },
+  { label:'Sem 4', alertas:10,conv:8 },
+];
+
+// ─── HELPERS ────────────────────────────────────────────────
+function cliente(id)  { return clientes.find(c=>c.id===id)||{}; }
+function med(id)      { return medicamentos.find(m=>m.id===id)||{}; }
+
+function tipoBadge(tipo) {
+  if(tipo==='controlado')  return '<span class="badge badge-red">controlado</span>';
+  if(tipo==='tarja_preta') return '<span class="badge badge-amber">tarja preta</span>';
+  return '<span class="badge badge-muted">comum</span>';
+}
+
+function diasBadge(n) {
+  if(n<=2)  return `<span class="badge badge-red">⚠ ${n}d</span>`;
+  if(n<=7)  return `<span class="badge badge-amber">${n}d</span>`;
+  if(n<=15) return `<span class="badge badge-blue">${n}d</span>`;
+  return `<span class="badge badge-muted">${n}d</span>`;
+}
+
+function gerarMensagem(compra) {
+  const cl = cliente(compra.clienteId);
+  const m  = med(compra.medId);
+  return `Olá, ${cl.nome}! 👋
+
+A Farmácia São João está te avisando que seu ${m.nome} vai acabar em *${compra.diasRestantes} dias* (dia ${fmtDate(compra.dataFim)}).
+
+Quer que a gente já separe uma nova caixa pra você? 💊
+
+Responda *SIM* para reservar ou *NÃO* se não precisar.
+
+Farmácia São João — (19) 3333-0000`;
+}
+
+// ─── RENDER ─────────────────────────────────────────────────
+function renderTimeline() {
+  document.getElementById('timeline-feed').innerHTML = timeline.map(t => `
+    <div class="timeline-item">
+      <div class="timeline-dot" style="background:${t.cor}"></div>
+      <div class="timeline-info">
+        <div class="timeline-main">${t.msg}</div>
+        <div class="timeline-meta">${t.meta}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderBarChart() {
+  const max = Math.max(...barData.map(b=>b.alertas));
+  document.getElementById('bar-chart').innerHTML = barData.map(b => `
+    <div class="bar-group">
+      <div style="flex:1;display:flex;align-items:flex-end;gap:3px;width:100%">
+        <div class="bar" style="flex:1;height:${(b.alertas/max)*100}%;background:var(--accent);opacity:.4"></div>
+        <div class="bar" style="flex:1;height:${(b.conv/max)*100}%;background:var(--green)"></div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderTopMeds() {
+  document.getElementById('top-meds').innerHTML = topMeds.map(m => `
+    <div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border)">
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:500">${m.nome}</div>
+        <div class="progress-wrap" style="margin-top:6px">
+          <div class="progress-bar" style="width:${m.pct}%;background:var(--accent)"></div>
+        </div>
+      </div>
+      <div style="font-size:13px;font-weight:600;color:var(--accent2);min-width:24px;text-align:right">${m.count}</div>
+    </div>
+  `).join('');
+}
+
+function renderClientes() {
+  document.getElementById('tbody-clientes').innerHTML = clientes.map(c => `
+    <tr>
+      <td><b>${c.nome}</b></td>
+      <td><span class="mono">${c.whatsapp}</span></td>
+      <td><span class="badge badge-blue">${c.remedios}</span></td>
+      <td style="color:var(--muted)">${c.ultimo}</td>
+      <td><span class="badge badge-green">ativo</span></td>
+      <td><button class="btn btn-ghost btn-sm" onclick="openModal('modal-compra')">+ Compra</button></td>
+    </tr>
+  `).join('');
+}
+
+function renderCompras() {
+  document.getElementById('tbody-compras').innerHTML = compras.map(c => {
+    const cl = cliente(c.clienteId);
+    const m  = med(c.medId);
+    const dr = c.diasRestantes;
+    let status;
+    if(dr<=0)  status = '<span class="badge badge-red">Acabou</span>';
+    else if(dr<=2) status = '<span class="badge badge-amber">⚠ Alertar</span>';
+    else       status = '<span class="badge badge-green">OK</span>';
+    return `
+      <tr>
+        <td><b>${cl.nome}</b></td>
+        <td>${m.nome} ${tipoBadge(m.tipo)}</td>
+        <td style="color:var(--muted)">${fmtDate(c.dataCompra)}</td>
+        <td style="color:var(--muted)">${fmtDate(c.dataFim)}</td>
+        <td style="color:var(--amber)">${fmtDate(c.dataAlerta)}</td>
+        <td>${diasBadge(dr)}</td>
+        <td>${status}</td>
+      </tr>`;
+  }).join('');
+}
+
+function renderAlertasHoje() {
+  if(!alertasHoje.length) {
+    document.getElementById('tbody-alertas-hoje').innerHTML = `<tr><td colspan="6" class="empty">Nenhum alerta para hoje 🎉</td></tr>`;
+    return;
+  }
+  document.getElementById('tbody-alertas-hoje').innerHTML = alertasHoje.map(c => {
+    const cl = cliente(c.clienteId);
+    const m  = med(c.medId);
+    return `
+      <tr>
+        <td><b>${cl.nome}</b><br><span class="mono">${cl.whatsapp}</span></td>
+        <td>${m.nome}</td>
+        <td>${tipoBadge(m.tipo)}</td>
+        <td>${diasBadge(c.diasRestantes)}</td>
+        <td><button class="btn btn-ghost btn-sm" onclick="previewAlerta(${c.id})">👁 Ver msg</button></td>
+        <td><button class="btn btn-green btn-sm" onclick="enviarAlerta(${c.id})">Enviar →</button></td>
+      </tr>`;
+  }).join('');
+}
+
+function renderAlertasHist() {
+  document.getElementById('tbody-alertas-hist').innerHTML = alertasHist.map(a => `
+    <tr>
+      <td><b>${a.cliente}</b></td>
+      <td>${a.med}</td>
+      <td style="color:var(--muted)">${a.data}</td>
+      <td style="color:var(--muted)">"${a.resposta}"</td>
+      <td>${a.conv ? '<span class="badge badge-green">✓ Sim</span>' : '<span class="badge badge-red">✗ Não</span>'}</td>
+    </tr>
+  `).join('');
+}
+
+function renderMeds() {
+  document.getElementById('tbody-meds').innerHTML = medicamentos.map(m => `
+    <tr>
+      <td><b>${m.nome}</b></td>
+      <td style="color:var(--muted)">${m.pa}</td>
+      <td>${tipoBadge(m.tipo)}</td>
+      <td>${m.receita ? '<span class="badge badge-amber">Sim</span>' : '<span class="badge badge-muted">Não</span>'}</td>
+      <td><button class="btn btn-ghost btn-sm">Editar</button></td>
+    </tr>
+  `).join('');
+}
+
+function populateSelects() {
+  const sc = document.getElementById('sel-cliente');
+  const sm = document.getElementById('sel-med');
+  clientes.forEach(c => {
+    const o = document.createElement('option');
+    o.value = c.id; o.textContent = c.nome; sc.appendChild(o);
+  });
+  medicamentos.forEach(m => {
+    const o = document.createElement('option');
+    o.value = m.id; o.textContent = m.nome; sm.appendChild(o);
+  });
+  // Default date
+  document.getElementById('inp-data-compra').value = hoje.toISOString().split('T')[0];
+}
+
+// ─── ACTIONS ────────────────────────────────────────────────
+let alertaPendente = null;
+
+function previewAlerta(compraId) {
+  const c = compras.find(x=>x.id===compraId);
+  alertaPendente = c;
+  document.getElementById('preview-msg').textContent = gerarMensagem(c);
+  document.getElementById('btn-confirmar-alerta').onclick = () => { enviarAlerta(compraId); closeModal('modal-alerta'); };
+  openModal('modal-alerta');
+}
+
+function enviarAlerta(compraId) {
+  const c = compras.find(x=>x.id===compraId);
+  const cl = cliente(c.clienteId);
+  // Remove da lista de hoje (simula envio)
+  const idx = alertasHoje.indexOf(c);
+  if(idx>=0) alertasHoje.splice(idx,1);
+  alertasHist.unshift({
+    cliente: cl.nome,
+    med: med(c.medId).nome,
+    data: fmtDate(hoje),
+    resposta: 'Aguardando...',
+    conv: false
+  });
+  renderAlertasHoje();
+  renderAlertasHist();
+  renderTimeline();
+  document.getElementById('alertas-badge').textContent = alertasHoje.length || '';
+  showToast(`✅ Alerta enviado para ${cl.nome}!`);
+}
+
+function enviarTodosAlertas() {
+  const n = alertasHoje.length;
+  if(!n) { showToast('Nenhum alerta pendente!'); return; }
+  alertasHoje.forEach(c => {
+    const cl = cliente(c.clienteId);
+    alertasHist.unshift({ cliente:cl.nome, med:med(c.medId).nome, data:fmtDate(hoje), resposta:'Aguardando...', conv:false });
+  });
+  alertasHoje.length = 0;
+  renderAlertasHoje();
+  renderAlertasHist();
+  document.getElementById('alertas-badge').textContent = '';
+  showToast(`✅ ${n} alertas enviados com sucesso!`);
+}
+
+function registrarCompra() {
+  const clienteId = parseInt(document.getElementById('sel-cliente').value);
+  const medId     = parseInt(document.getElementById('sel-med').value);
+  const dur       = parseInt(document.getElementById('inp-duracao').value);
+  if(!clienteId||!medId||!dur) { alert('Preencha todos os campos obrigatórios'); return; }
+  const dc = new Date(document.getElementById('inp-data-compra').value+'T12:00:00');
+  const nova = { id: compras.length+1, clienteId, medId, dataCompra:dc, duracao:dur, qtd:1 };
+  nova.dataFim    = addDias(dc, dur);
+  nova.dataAlerta = addDias(nova.dataFim, -2);
+  nova.diasRestantes = diasAte(nova.dataFim);
+  compras.unshift(nova);
+  renderCompras();
+  closeModal('modal-compra');
+  showToast(`✅ Compra registrada! Alerta programado para ${fmtDate(nova.dataAlerta)}`);
+}
+
+function cadastrarCliente() {
+  const nome = document.getElementById('inp-cli-nome').value.trim();
+  const wpp  = document.getElementById('inp-cli-wpp').value.trim();
+  if(!nome||!wpp) { alert('Nome e WhatsApp são obrigatórios'); return; }
+  clientes.push({ id:clientes.length+1, nome, whatsapp:wpp, remedios:0, ultimo:'Nunca', ativo:true });
+  renderClientes();
+  closeModal('modal-cliente');
+  showToast('✅ Cliente cadastrado!');
+}
+
+function cadastrarMed() {
+  const nome = document.getElementById('inp-med-nome').value.trim();
+  const pa   = document.getElementById('inp-med-pa').value.trim();
+  const tipo = document.getElementById('inp-med-tipo').value;
+  const rec  = document.getElementById('inp-med-receita').value==='sim';
+  if(!nome) { alert('Nome obrigatório'); return; }
+  medicamentos.push({ id:medicamentos.length+1, nome, pa, tipo, receita:rec });
+  renderMeds();
+  closeModal('modal-med');
+  showToast('✅ Medicamento cadastrado!');
+}
+
+function simularAlerta() {
+  showToast('🔔 Simulando... 3 alertas seriam disparados agora via WhatsApp!');
+}
+
+// ─── UI UTILS ───────────────────────────────────────────────
+function showPage(id, el) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  if(el) el.classList.add('active');
+  const titles = { dashboard:'Dashboard', clientes:'Clientes', compras:'Compras',
+                   alertas:'Alertas', medicamentos:'Medicamentos', config:'Configurações' };
+  document.getElementById('page-title').textContent = titles[id]||id;
+}
+
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if(e.target===m) m.classList.remove('open'); });
+});
+
+let toastTimeout;
+function showToast(msg) {
+  let t = document.getElementById('toast');
+  if(!t) {
+    t = document.createElement('div');
+    t.id = 'toast';
+    t.style.cssText = `position:fixed;bottom:24px;right:24px;background:#1e2536;border:1px solid #3a4a63;color:#e8ecf4;padding:12px 18px;border-radius:10px;font-size:13px;z-index:999;transition:opacity .3s;box-shadow:0 4px 20px rgba(0,0,0,.4)`;
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.opacity = '1';
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => { t.style.opacity='0'; }, 3000);
+}
+
+// ─── INIT ────────────────────────────────────────────────────
+renderTimeline();
+renderBarChart();
+renderTopMeds();
+renderClientes();
+renderCompras();
+renderAlertasHoje();
+renderAlertasHist();
+renderMeds();
+populateSelects();
+</script>
+</body>
+</html>
