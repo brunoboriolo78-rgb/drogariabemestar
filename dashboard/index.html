@@ -655,9 +655,9 @@
     <div class="modal-body">
       <div class="field">
         <label>Cliente</label>
-        <select id="sel-cliente">
-          <option value="">Selecione um cliente...</option>
-        </select>
+        <input type="text" id="inp-busca-cliente" placeholder="Digite o nome do cliente..." autocomplete="off" oninput="filtrarClientes()">
+<div id="lista-clientes" style="display:none;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;max-height:200px;overflow-y:auto;margin-top:4px"></div>
+<input type="hidden" id="sel-cliente">
       </div>
       <div class="field">
         <label>Medicamento</label>
@@ -1002,6 +1002,26 @@ function renderMeds() {
       <td><button class="btn btn-ghost btn-sm">Editar</button></td>
     </tr>
   `).join('');
+}
+function filtrarClientes() {
+  const busca = document.getElementById('inp-busca-cliente').value.toLowerCase();
+  const lista = document.getElementById('lista-clientes');
+  if(!busca || busca.length < 2) { lista.style.display='none'; return; }
+  const filtrados = clientes.filter(c => c.nome.toLowerCase().includes(busca) || c.whatsapp.includes(busca));
+  if(!filtrados.length) { lista.style.display='none'; return; }
+  lista.style.display='block';
+  lista.innerHTML = filtrados.map(c => `
+    <div onclick="selecionarCliente('${c.id}','${c.nome}')" style="padding:10px 14px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center" onmouseover="this.style.background='var(--bg2)'" onmouseout="this.style.background='transparent'">
+      <span>${c.nome}</span>
+      <span style="font-size:11px;color:var(--muted)">${c.whatsapp}</span>
+    </div>
+  `).join('');
+}
+
+function selecionarCliente(id, nome) {
+  document.getElementById('sel-cliente').value = id;
+  document.getElementById('inp-busca-cliente').value = nome;
+  document.getElementById('lista-clientes').style.display = 'none';
 }
 function filtrarMeds() {
   const busca = document.getElementById('inp-busca-med').value.toLowerCase();
