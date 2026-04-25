@@ -661,9 +661,9 @@
       </div>
       <div class="field">
         <label>Medicamento</label>
-        <select id="sel-med">
-          <option value="">Selecione um medicamento...</option>
-        </select>
+        <input type="text" id="inp-busca-med" placeholder="Digite o nome do medicamento..." autocomplete="off" oninput="filtrarMeds()">
+<div id="lista-meds" style="display:none;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;max-height:200px;overflow-y:auto;margin-top:4px"></div>
+<input type="hidden" id="sel-med">
       </div>
       <div class="fields-row">
         <div class="field">
@@ -1003,7 +1003,26 @@ function renderMeds() {
     </tr>
   `).join('');
 }
+function filtrarMeds() {
+  const busca = document.getElementById('inp-busca-med').value.toLowerCase();
+  const lista = document.getElementById('lista-meds');
+  if(!busca || busca.length < 2) { lista.style.display='none'; return; }
+  const filtrados = medicamentos.filter(m => m.nome.toLowerCase().includes(busca) || m.pa.toLowerCase().includes(busca));
+  if(!filtrados.length) { lista.style.display='none'; return; }
+  lista.style.display='block';
+  lista.innerHTML = filtrados.map(m => `
+    <div onclick="selecionarMed('${m.id}','${m.nome}')" style="padding:10px 14px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center" onmouseover="this.style.background='var(--bg2)'" onmouseout="this.style.background='transparent'">
+      <span>${m.nome}</span>
+      <span style="font-size:11px;color:var(--muted)">${m.pa}</span>
+    </div>
+  `).join('');
+}
 
+function selecionarMed(id, nome) {
+  document.getElementById('sel-med').value = id;
+  document.getElementById('inp-busca-med').value = nome;
+  document.getElementById('lista-meds').style.display = 'none';
+}
 function populateSelects() {
   const sc = document.getElementById('sel-cliente');
   const sm = document.getElementById('sel-med');
