@@ -29,7 +29,7 @@ const conversas = new Map(); // whatsapp -> [ {role, content}, ... ]
 // ============================================================
 app.post('/webhook/whatsapp', async (req, res) => {
   try {
-    const { phone, message, isGroup } = req.body;
+    const { phone, text, isGroup } = req.body; const message = { text: text?.message };
 
     // Ignora grupos e mensagens de status
     if (isGroup || !message?.text) {
@@ -66,7 +66,7 @@ app.post('/webhook/whatsapp', async (req, res) => {
 
     // 5. Chama o agente Bia via Claude API
     const resposta = await claude.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-haiku-4-5-20251001',
       max_tokens: 512,
       system: systemPrompt,
       messages: historico.slice(-10), // mantém últimas 10 mensagens
@@ -251,7 +251,7 @@ async function enviarWhatsApp(whatsapp, texto, token) {
 
   const resp = await fetch(url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'Client-Token': 'F99c7b86398234011812f7525b76f2446S', 'Client-Token': 'F99c7b86398234011812f7525b76f2446S' },
     body: JSON.stringify({
       phone:   whatsapp,
       message: texto,

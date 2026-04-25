@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>RecorrênciaFarma — Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -1139,15 +1140,47 @@ function showToast(msg) {
 }
 
 // ─── INIT ────────────────────────────────────────────────────
-renderTimeline();
-renderBarChart();
-renderTopMeds();
-renderClientes();
-renderCompras();
-renderAlertasHoje();
-renderAlertasHist();
-renderMeds();
-populateSelects();
+// SUPABASE CONFIG
+const _sb = supabase.createClient('https://rggekwmhvksgvhkgxylf.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJnZ2Vrd21odmtzZ3Zoa2d4eWxmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcwNjUzNTYsImV4cCI6MjA5MjY0MTM1Nn0.m4o-R7MCIyXWJtPPnfvHGD0VTSYUIOPcHWLaG_twSpw');
+
+async function carregarDados() {
+  // Clientes
+  const { data: cls } = await _sb.from('clientes').select('*').eq('ativo', true);
+  if (cls) { clientes.length = 0; cls.forEach(c => clientes.push({ id: c.id, nome: c.nome, whatsapp: c.whatsapp, remedios: 0, ultimo: 'N/A', ativo: c.ativo })); }
+
+  // Medicamentos
+  const { data: mds } = await _sb.from('medicamentos').select('*');
+  if (mds) { medicamentos.length = 0; mds.forEach(m => medicamentos.push({ id: m.id, nome: m.nome, pa: m.principio_ativo || '', tipo: m.tipo, receita: m.requer_receita })); }
+
+  // Compras
+  const { data: cps } = await _sb.from('compras').select('*, clientes(nome), medicamentos(nome, tipo, requer_receita)');
+  if (cps) {
+    compras.length = 0;
+    cps.forEach(c => {
+      const df = new Date(c.data_fim + 'T12:00:00');
+      compras.push({ id: c.id, clienteId: c.cliente_id, medId: c.medicamento_id, dataCompra: new Date(c.data_compra + 'T12:00:00'), duracao: c.duracao_dias, qtd: c.quantidade, dataFim: df, dataAlerta: new Date(c.data_alerta + 'T12:00:00'), diasRestantes: diasAte(df) });
+    });
+  }
+
+  // Alertas histórico
+  const { data: als } = await _sb.from('alertas').select('*, compras(*, clientes(nome), medicamentos(nome))').eq('status', 'enviado').order('enviado_em', { ascending: false }).limit(20);
+  if (als) {
+    alertasHist.length = 0;
+    als.forEach(a => alertasHist.push({ cliente: a.compras?.clientes?.nome || 'N/A', med: a.compras?.medicamentos?.nome || 'N/A', data: a.enviado_em ? new Date(a.enviado_em).toLocaleDateString('pt-BR') : 'N/A', resposta: a.resposta_cliente || 'Aguardando...', conv: a.resposta_cliente === 'convertido' }));
+  }
+
+  renderTimeline();
+  renderBarChart();
+  renderTopMeds();
+  renderClientes();
+  renderCompras();
+  renderAlertasHoje();
+  renderAlertasHist();
+  renderMeds();
+  populateSelects();
+}
+
+carregarDados();
 </script>
 </body>
 </html>
