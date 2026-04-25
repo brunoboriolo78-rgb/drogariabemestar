@@ -1064,33 +1064,42 @@ function enviarTodosAlertas() {
   showToast(`✅ ${n} alertas enviados com sucesso!`);
 }
 
-function registrarCompra() {
-  const clienteId = parseInt(document.getElementById('sel-cliente').value);
-  const medId     = parseInt(document.getElementById('sel-med').value);
+async function registrarCompra() {
+  const clienteId = document.getElementById('sel-cliente').value;
+  const medId     = document.getElementById('sel-med').value;
   const dur       = parseInt(document.getElementById('inp-duracao').value);
+  const qtd       = parseInt(document.getElementById('inp-qtd').value) || 1;
+  const dataCompra= document.getElementById('inp-data-compra').value;
   if(!clienteId||!medId||!dur) { alert('Preencha todos os campos obrigatórios'); return; }
-  const dc = new Date(document.getElementById('inp-data-compra').value+'T12:00:00');
-  const nova = { id: compras.length+1, clienteId, medId, dataCompra:dc, duracao:dur, qtd:1 };
-  nova.dataFim    = addDias(dc, dur);
-  nova.dataAlerta = addDias(nova.dataFim, -2);
-  nova.diasRestantes = diasAte(nova.dataFim);
-  compras.unshift(nova);
+  const farmRes = await _sb.from('farmacias').select('id').single();
+  const farm = farmRes.data;
+  const { data, error } = await _sb.from('compras').insert({ cliente_id: clienteId, medicamento_id: medId, farmacia_id: farm.id, data_compra: dataCompra, duracao_dias: dur, quantidade: qtd }).select().single();
+  if(error) { alert('Erro ao registrar: ' + error.message); return; }
+  const dc = new Date(data.data_compra + 'T12:00:00');
+  const df = new Date(data.data_fim + 'T12:00:00');
+  const da = new Date(data.data_alerta + 'T12:00:00');
+  compras.unshift({ id: data.id, clienteId: data.cliente_id, medId: data.medicamento_id, dataCompra: dc, duracao: dur, qtd, dataFim: df, dataAlerta: da, diasRestantes: diasAte(df) });
   renderCompras();
   closeModal('modal-compra');
-  showToast(`✅ Compra registrada! Alerta programado para ${fmtDate(nova.dataAlerta)}`);
+  showToast(`✅ Compra registrada! Alerta programado para ${fmtDate(da)}`);
 }
-
-function cadastrarCliente() {
+async function cadastrarCliente() {
   const nome = document.getElementById('inp-cli-nome').value.trim();
   const wpp  = document.getElementById('inp-cli-wpp').value.trim();
   if(!nome||!wpp) { alert('Nome e WhatsApp são obrigatórios'); return; }
-  clientes.push({ id:clientes.length+1, nome, whatsapp:wpp, remedios:0, ultimo:'Nunca', ativo:true });
+ const farmRes = await _sb.from('farmacias').select('id').single();
+  const farm = farmRes.data;
+  const { data, error } = await _sb.from('clientes').insert({ farmacia_id: farm.id, nome, whatsapp: wpp }).select().single();
+  if(error) { alert('Erro ao cadastrar: ' + error.message); return; }
+  clientes.push({ id: data.id, nome: data.nome, whatsapp: data.whatsapp, remedios:0, ultimo:'Nunca', ativo:true });
   renderClientes();
   closeModal('modal-cliente');
+  document.getElementById('inp-cli-nome').value = '';
+  document.getElementById('inp-cli-wpp').value = '';
   showToast('✅ Cliente cadastrado!');
 }
 
-function cadastrarMed() {
+async function cadastrarMed() {
   const nome = document.getElementById('inp-med-nome').value.trim();
   const pa   = document.getElementById('inp-med-pa').value.trim();
   const tipo = document.getElementById('inp-med-tipo').value;
