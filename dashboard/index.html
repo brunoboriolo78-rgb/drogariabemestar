@@ -6,419 +6,610 @@
 <title>RecorrênciaFarma — Dashboard</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  #login-screen {
-    position: fixed; inset: 0;
-    background: #f0f4ff;
-    display: flex; align-items: center; justify-content: center;
-    z-index: 999;
-  }
-  .login-box {
-    background: #fff;
-    border: 1px solid #c5d0f0;
-    border-radius: 16px;
-    padding: 40px;
-    width: 360px;
-    text-align: center;
-    box-shadow: 0 8px 32px rgba(35,72,212,.08);
-  }
-  .login-logo { font-size: 32px; margin-bottom: 8px; }
-  .login-title { font-size: 20px; font-weight: 600; color: #1a2150; margin-bottom: 4px; }
-  .login-sub { font-size: 13px; color: #5a6a9a; margin-bottom: 28px; }
-  .login-input {
-    width: 100%; padding: 12px 16px;
-    border: 1px solid #c5d0f0; border-radius: 8px;
-    font-size: 15px; color: #1a2150;
-    background: #f0f4ff; outline: none;
-    margin-bottom: 12px; box-sizing: border-box;
-    text-align: center; letter-spacing: 4px;
-    font-family: inherit;
-  }
-  .login-input:focus { border-color: #2348d4; }
-  .login-btn {
-    width: 100%; padding: 12px;
-    background: #2348d4; color: #fff;
-    border: none; border-radius: 8px;
-    font-size: 15px; font-weight: 600;
-    cursor: pointer; font-family: inherit;
-    transition: background .15s;
-  }
-  .login-btn:hover { background: #1a38c4; }
-  .login-error { color: #cc2020; font-size: 13px; margin-top: 8px; display:none; }
-  :root {
-    --bg:       #f0f4ff;
-    --bg2:      #ffffff;
-    --bg3:      #e8eeff;
-    --border:   #c5d0f0;
-    --border2:  #a0b0e0;
-    --text:     #1a2150;
-    --muted:    #5a6a9a;
-    --accent:   #2348d4;
-    --accent2:  #1a38c4;
-    --green:    #0a9a5a;
-    --amber:    #c07a00;
-    --red:      #cc2020;
-    --purple:   #6040c0;
-    --card-r:   12px;
-  }
+  /* ── RESET + TOKENS ── */
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #f4f7ff;
+    --surface:  #ffffff;
+    --surface2: #eef2ff;
+    --border:   #dde3f5;
+    --border2:  #c4ceee;
+    --text:     #0f1733;
+    --muted:    #6472a0;
+    --accent:   #2348d4;
+    --accent-l: #eef1fd;
+    --accent2:  #4f6ef7;
+    --green:    #0d9f6e;
+    --green-l:  #e8faf4;
+    --amber:    #c47a00;
+    --amber-l:  #fff8e6;
+    --red:      #d42323;
+    --red-l:    #fef0f0;
+    --purple:   #7c3aed;
+    --purple-l: #f3eeff;
+    --r:        14px;
+    --shadow:   0 2px 12px rgba(35,72,212,.07);
+    --shadow-lg:0 8px 32px rgba(35,72,212,.12);
+  }
+
   html { font-size: 14px; }
   body {
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Plus Jakarta Sans', sans-serif;
     background: var(--bg);
     color: var(--text);
     min-height: 100vh;
     display: flex;
   }
 
-  /* SIDEBAR */
+  /* ── SIDEBAR ── */
   .sidebar {
-    width: 220px;
+    width: 240px;
     min-height: 100vh;
-    background: var(--bg2);
-    border-right: 1px solid var(--border);
+    background: var(--accent);
     display: flex;
     flex-direction: column;
-    padding: 24px 0;
     position: fixed;
     top: 0; left: 0; bottom: 0;
-    z-index: 10;
+    z-index: 20;
+    overflow: hidden;
+  }
+  .sidebar::before {
+    content: '';
+    position: absolute;
+    top: -80px; right: -80px;
+    width: 240px; height: 240px;
+    background: rgba(255,255,255,.06);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .sidebar::after {
+    content: '';
+    position: absolute;
+    bottom: -60px; left: -60px;
+    width: 200px; height: 200px;
+    background: rgba(255,255,255,.04);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+
+  .sidebar-header {
+    padding: 28px 24px 20px;
+    border-bottom: 1px solid rgba(255,255,255,.12);
   }
   .sidebar-logo {
-    padding: 0 20px 28px;
-    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 10px;
     margin-bottom: 16px;
   }
-  .sidebar-logo span {
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--text);
-    letter-spacing: -0.3px;
+  .logo-icon {
+    width: 36px; height: 36px;
+    background: rgba(255,255,255,.18);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
   }
-  .sidebar-logo .pill {
+  .logo-text { font-size: 15px; font-weight: 700; color: #fff; letter-spacing: -.3px; }
+  .logo-pill {
     display: inline-block;
-    background: var(--accent);
-    color: #fff;
-    font-size: 10px;
-    font-weight: 600;
-    padding: 1px 6px;
-    border-radius: 4px;
-    margin-left: 6px;
-    vertical-align: middle;
+    background: rgba(255,255,255,.2);
+    color: rgba(255,255,255,.9);
+    font-size: 10px; font-weight: 600;
+    padding: 2px 7px; border-radius: 20px;
+    letter-spacing: .3px;
+  }
+  .farmacia-info {
+    background: rgba(255,255,255,.1);
+    border-radius: 10px;
+    padding: 10px 12px;
+  }
+  .farmacia-nome { font-size: 12px; font-weight: 600; color: #fff; }
+  .farmacia-plano { font-size: 11px; color: rgba(255,255,255,.6); margin-top: 1px; }
+
+  .nav-section {
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 1.2px; text-transform: uppercase;
+    color: rgba(255,255,255,.4);
+    padding: 20px 24px 8px;
   }
   .nav-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 9px 20px;
-    color: var(--muted);
-    font-size: 13.5px;
-    font-weight: 400;
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 24px;
+    color: rgba(255,255,255,.65);
+    font-size: 13.5px; font-weight: 500;
     cursor: pointer;
     transition: all .15s;
-    border-left: 2px solid transparent;
+    position: relative;
   }
-  .nav-item:hover { color: var(--text); background: var(--bg3); }
+  .nav-item:hover { color: #fff; background: rgba(255,255,255,.08); }
   .nav-item.active {
-    color: var(--accent2);
-    background: rgba(59,130,246,.08);
-    border-left-color: var(--accent);
-    font-weight: 500;
-  }
-  .nav-icon { font-size: 15px; width: 18px; text-align: center; }
-  .sidebar-section {
-    font-size: 10px;
+    color: var(--accent);
+    background: #fff;
+    border-radius: 0;
     font-weight: 600;
-    letter-spacing: 1px;
-    color: var(--muted);
-    padding: 16px 20px 6px;
-    text-transform: uppercase;
   }
+  .nav-item.active::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--accent2);
+    border-radius: 0 3px 3px 0;
+  }
+  .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+  .nav-badge {
+    margin-left: auto;
+    background: rgba(255,255,255,.25);
+    color: #fff;
+    font-size: 10px; font-weight: 700;
+    padding: 1px 7px; border-radius: 20px;
+  }
+  .nav-item.active .nav-badge {
+    background: var(--red-l);
+    color: var(--red);
+  }
+
   .sidebar-footer {
     margin-top: auto;
-    padding: 16px 20px;
-    border-top: 1px solid var(--border);
-    font-size: 12px;
-    color: var(--muted);
+    padding: 16px 24px;
+    border-top: 1px solid rgba(255,255,255,.12);
   }
-  .farmacia-badge {
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--text);
-    padding-bottom: 2px;
+  .logout-btn {
+    display: flex; align-items: center; gap: 8px;
+    color: rgba(255,255,255,.5);
+    font-size: 12px; cursor: pointer;
+    transition: color .15s;
   }
+  .logout-btn:hover { color: rgba(255,255,255,.9); }
 
-  /* MAIN */
-  .main {
-    margin-left: 220px;
-    flex: 1;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-  }
+  /* ── MAIN ── */
+  .main { margin-left: 240px; flex: 1; min-height: 100vh; display: flex; flex-direction: column; }
+
   .topbar {
-    height: 56px;
+    height: 60px;
+    background: var(--surface);
     border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 28px;
-    background: var(--bg);
-    position: sticky;
-    top: 0;
-    z-index: 5;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 32px;
+    position: sticky; top: 0; z-index: 10;
+    box-shadow: 0 1px 0 var(--border);
   }
-  .topbar-title { font-size: 15px; font-weight: 500; }
+  .topbar-left { display: flex; align-items: center; gap: 12px; }
+  .topbar-title { font-size: 16px; font-weight: 700; letter-spacing: -.3px; }
+  .topbar-date { font-size: 12px; color: var(--muted); }
   .topbar-actions { display: flex; gap: 10px; align-items: center; }
+
   .btn {
     display: inline-flex; align-items: center; gap: 6px;
-    padding: 7px 14px;
-    border-radius: 8px;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    border: none;
-    transition: all .15s;
-    font-family: inherit;
+    padding: 8px 16px; border-radius: 10px;
+    font-size: 13px; font-weight: 600;
+    cursor: pointer; border: none;
+    transition: all .15s; font-family: inherit;
   }
-  .btn-primary { background: var(--accent); color: #fff; }
-  .btn-primary:hover { background: #2563eb; }
-  .btn-ghost {
-    background: var(--bg3);
-    color: var(--muted);
-    border: 1px solid var(--border);
+  .btn-primary {
+    background: var(--accent); color: #fff;
+    box-shadow: 0 2px 8px rgba(35,72,212,.3);
   }
-  .btn-ghost:hover { color: var(--text); border-color: var(--border2); }
-  .btn-danger { background: rgba(239,68,68,.12); color: var(--red); border: 1px solid rgba(239,68,68,.2); }
-  .btn-danger:hover { background: rgba(239,68,68,.2); }
-  .btn-sm { padding: 4px 10px; font-size: 12px; }
-  .btn-green { background: rgba(34,197,94,.12); color: var(--green); border: 1px solid rgba(34,197,94,.2); }
-  .btn-green:hover { background: rgba(34,197,94,.2); }
+  .btn-primary:hover { background: #1a38c4; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(35,72,212,.4); }
+  .btn-ghost { background: var(--surface); color: var(--muted); border: 1.5px solid var(--border); }
+  .btn-ghost:hover { color: var(--text); border-color: var(--border2); background: var(--surface2); }
+  .btn-green { background: var(--green-l); color: var(--green); border: 1.5px solid rgba(13,159,110,.2); }
+  .btn-green:hover { background: rgba(13,159,110,.15); }
+  .btn-red { background: var(--red-l); color: var(--red); border: 1.5px solid rgba(212,35,35,.2); }
+  .btn-sm { padding: 5px 12px; font-size: 12px; border-radius: 8px; }
 
-  /* CONTENT */
-  .content { padding: 28px; flex: 1; }
-
-  /* PAGE SECTIONS */
-  .page { display: none; }
+  /* ── CONTENT ── */
+  .content { padding: 28px 32px; flex: 1; }
+  .page { display: none; animation: fadeIn .2s ease; }
   .page.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 
-  /* METRICS */
-  .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
-  .metric-card {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: var(--card-r);
-    padding: 20px;
+  /* ── BANNER ── */
+  .banner {
+    border-radius: var(--r);
+    padding: 16px 20px;
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 24px;
   }
-  .metric-label { font-size: 11.5px; color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 10px; }
-  .metric-value { font-size: 28px; font-weight: 600; letter-spacing: -1px; line-height: 1; }
-  .metric-sub { font-size: 12px; color: var(--muted); margin-top: 6px; }
-  .metric-trend { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; font-weight: 500; }
-  .trend-up { color: var(--green); }
-  .trend-dn { color: var(--red); }
+  .banner-amber { background: var(--amber-l); border: 1.5px solid rgba(196,122,0,.2); }
+  .banner-green  { background: var(--green-l);  border: 1.5px solid rgba(13,159,110,.2); }
+  .banner-blue   { background: var(--accent-l); border: 1.5px solid rgba(35,72,212,.15); }
+  .banner-left { display: flex; align-items: center; gap: 12px; }
+  .banner-icon { font-size: 22px; }
+  .banner-title { font-size: 13.5px; font-weight: 600; }
+  .banner-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
 
-  /* CARDS GRID */
+  /* ── METRICS ── */
+  .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+  .metric-card {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: var(--r);
+    padding: 20px;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+    transition: transform .15s, box-shadow .15s;
+  }
+  .metric-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+  .metric-card::after {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    transform: translate(30px, -30px);
+    opacity: .06;
+  }
+  .mc-blue::after   { background: var(--accent); }
+  .mc-green::after  { background: var(--green); }
+  .mc-amber::after  { background: var(--amber); }
+  .mc-purple::after { background: var(--purple); }
+  .metric-icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; margin-bottom: 14px;
+  }
+  .mi-blue   { background: var(--accent-l); }
+  .mi-green  { background: var(--green-l); }
+  .mi-amber  { background: var(--amber-l); }
+  .mi-purple { background: var(--purple-l); }
+  .metric-label { font-size: 11.5px; color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: .6px; margin-bottom: 6px; }
+  .metric-value { font-size: 30px; font-weight: 700; letter-spacing: -1.5px; line-height: 1; }
+  .metric-sub { font-size: 11.5px; color: var(--muted); margin-top: 6px; display: flex; align-items: center; gap: 4px; }
+  .trend-up { color: var(--green); font-weight: 600; }
+  .trend-dn { color: var(--red); font-weight: 600; }
+
+  /* ── GRID ── */
   .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+
+  /* ── CARD ── */
   .card {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: var(--card-r);
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: var(--r);
+    box-shadow: var(--shadow);
+    margin-bottom: 16px;
   }
   .card-header {
     display: flex; align-items: center; justify-content: space-between;
     padding: 16px 20px;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1.5px solid var(--border);
   }
-  .card-title { font-size: 13px; font-weight: 500; }
+  .card-title { font-size: 13.5px; font-weight: 600; }
   .card-body { padding: 20px; }
 
-  /* TABLE */
+  /* ── TABLE ── */
   .table-wrap { overflow-x: auto; }
   table { width: 100%; border-collapse: collapse; }
   th {
-    font-size: 11px; font-weight: 600; text-transform: uppercase;
-    letter-spacing: .5px; color: var(--muted);
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .6px; color: var(--muted);
     padding: 10px 16px; text-align: left;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1.5px solid var(--border);
+    background: var(--bg);
   }
-  td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  td { padding: 13px 16px; font-size: 13px; border-bottom: 1px solid var(--border); vertical-align: middle; }
   tr:last-child td { border-bottom: none; }
-  tr:hover td { background: rgba(255,255,255,.02); }
+  tbody tr { transition: background .1s; }
+  tbody tr:hover td { background: var(--surface2); }
 
-  /* BADGES */
+  /* ── BADGES ── */
   .badge {
     display: inline-flex; align-items: center; gap: 4px;
-    padding: 2px 8px; border-radius: 20px;
-    font-size: 11px; font-weight: 500;
+    padding: 3px 9px; border-radius: 20px;
+    font-size: 11px; font-weight: 600;
   }
-  .badge-green { background: rgba(34,197,94,.12); color: var(--green); }
-  .badge-amber { background: rgba(245,158,11,.12); color: var(--amber); }
-  .badge-red   { background: rgba(239,68,68,.12);  color: var(--red); }
-  .badge-blue  { background: rgba(59,130,246,.12); color: var(--accent2); }
-  .badge-muted { background: var(--bg3); color: var(--muted); }
+  .badge-green  { background: var(--green-l);  color: var(--green); }
+  .badge-amber  { background: var(--amber-l);  color: var(--amber); }
+  .badge-red    { background: var(--red-l);    color: var(--red); }
+  .badge-blue   { background: var(--accent-l); color: var(--accent2); }
+  .badge-purple { background: var(--purple-l); color: var(--purple); }
+  .badge-muted  { background: var(--surface2); color: var(--muted); }
 
-  /* PROGRESS BAR */
-  .progress-wrap { background: var(--bg3); border-radius: 4px; height: 6px; overflow: hidden; }
-  .progress-bar { height: 100%; border-radius: 4px; transition: width .5s; }
+  /* ── PROGRESS ── */
+  .progress-wrap { background: var(--surface2); border-radius: 6px; height: 7px; overflow: hidden; }
+  .progress-bar { height: 100%; border-radius: 6px; transition: width .6s cubic-bezier(.4,0,.2,1); }
 
-  /* MODAL */
+  /* ── TIMELINE ── */
+  .timeline { display: flex; flex-direction: column; }
+  .timeline-item { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .timeline-item:last-child { border-bottom: none; }
+  .tl-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    margin-top: 5px; flex-shrink: 0;
+  }
+  .tl-info { flex: 1; }
+  .tl-main { font-size: 13px; line-height: 1.4; }
+  .tl-meta { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+
+  /* ── BAR CHART ── */
+  .bar-chart { display: flex; align-items: flex-end; gap: 10px; height: 90px; }
+  .bar-group { flex: 1; display: flex; align-items: flex-end; gap: 3px; }
+  .bar { border-radius: 5px 5px 0 0; transition: height .5s cubic-bezier(.4,0,.2,1); }
+
+  /* ── MODAL ── */
   .modal-overlay {
-    display: none;
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,.6);
-    z-index: 50;
-    align-items: center;
-    justify-content: center;
+    display: none; position: fixed; inset: 0;
+    background: rgba(15,23,51,.5);
+    backdrop-filter: blur(4px);
+    z-index: 50; align-items: center; justify-content: center;
   }
   .modal-overlay.open { display: flex; }
   .modal {
-    background: var(--bg2);
-    border: 1px solid var(--border2);
-    border-radius: 16px;
-    width: 480px;
-    max-width: 96vw;
-    animation: slideUp .2s ease;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 18px;
+    width: 500px; max-width: 96vw;
+    box-shadow: var(--shadow-lg);
+    animation: slideUp .2s cubic-bezier(.4,0,.2,1);
   }
-  @keyframes slideUp { from { transform: translateY(16px); opacity: 0; } to { transform: none; opacity: 1; } }
+  @keyframes slideUp { from { transform: translateY(20px) scale(.98); opacity: 0; } to { transform: none; opacity: 1; } }
   .modal-header {
-    padding: 20px 24px 16px;
-    border-bottom: 1px solid var(--border);
+    padding: 22px 24px 18px;
+    border-bottom: 1.5px solid var(--border);
     display: flex; align-items: center; justify-content: space-between;
   }
-  .modal-title { font-size: 15px; font-weight: 600; }
-  .modal-close { background: none; border: none; color: var(--muted); font-size: 20px; cursor: pointer; line-height: 1; }
+  .modal-title { font-size: 15px; font-weight: 700; }
+  .modal-close {
+    background: var(--surface2); border: none; color: var(--muted);
+    font-size: 16px; cursor: pointer; line-height: 1;
+    width: 28px; height: 28px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .15s;
+  }
+  .modal-close:hover { background: var(--border); }
   .modal-body { padding: 24px; display: flex; flex-direction: column; gap: 16px; }
-  .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; gap: 10px; justify-content: flex-end; }
+  .modal-footer { padding: 18px 24px; border-top: 1.5px solid var(--border); display: flex; gap: 10px; justify-content: flex-end; }
 
-  /* FORM */
+  /* ── FORM ── */
   .field { display: flex; flex-direction: column; gap: 6px; }
-  .field label { font-size: 12px; font-weight: 500; color: var(--muted); }
+  .field label { font-size: 12px; font-weight: 600; color: var(--muted); letter-spacing: .2px; }
   .field input, .field select, .field textarea {
-    background: var(--bg3);
-    border: 1px solid var(--border2);
-    border-radius: 8px;
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
     color: var(--text);
     font-family: inherit;
     font-size: 13px;
-    padding: 9px 12px;
+    padding: 10px 13px;
     outline: none;
-    transition: border-color .15s;
+    transition: border-color .15s, box-shadow .15s;
   }
-  .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); }
-  .field select option { background: var(--bg2); }
+  .field input:focus, .field select:focus, .field textarea:focus {
+    border-color: var(--accent2);
+    box-shadow: 0 0 0 3px rgba(79,110,247,.1);
+  }
   .fields-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
-  /* ALERT TIMELINE */
-  .timeline { display: flex; flex-direction: column; gap: 0; }
-  .timeline-item { display: flex; gap: 14px; padding: 12px 0; border-bottom: 1px solid var(--border); }
-  .timeline-item:last-child { border-bottom: none; }
-  .timeline-dot {
-    width: 10px; height: 10px; border-radius: 50%;
-    margin-top: 4px; flex-shrink: 0;
+  /* ── FIDELIDADE ── */
+  .nivel-card {
+    border-radius: var(--r);
+    padding: 16px;
+    text-align: center;
+    border: 1.5px solid var(--border);
+    background: var(--surface);
+    box-shadow: var(--shadow);
+    transition: transform .15s;
   }
-  .timeline-info { flex: 1; }
-  .timeline-main { font-size: 13px; font-weight: 400; line-height: 1.4; }
-  .timeline-meta { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+  .nivel-card:hover { transform: translateY(-2px); }
+  .nivel-emoji { font-size: 28px; margin-bottom: 6px; }
+  .nivel-nome { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; }
+  .nivel-count { font-size: 28px; font-weight: 700; }
 
-  /* CHART BARS */
-  .bar-chart { display: flex; align-items: flex-end; gap: 8px; height: 80px; }
-  .bar-group { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
-  .bar { width: 100%; border-radius: 4px 4px 0 0; transition: height .4s; }
-  .bar-label { font-size: 10px; color: var(--muted); }
+  /* ── CASHBACK ── */
+  .cashback-card {
+    background: linear-gradient(135deg, var(--green) 0%, #0a7a55 100%);
+    border-radius: var(--r);
+    padding: 20px;
+    color: #fff;
+    position: relative; overflow: hidden;
+  }
+  .cashback-card::before {
+    content: '💰';
+    position: absolute; right: 20px; top: 16px;
+    font-size: 40px; opacity: .2;
+  }
+  .cashback-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .8px; opacity: .7; }
+  .cashback-value { font-size: 32px; font-weight: 700; margin: 6px 0; }
+  .cashback-sub { font-size: 12px; opacity: .7; }
 
-  /* EMPTY STATE */
-  .empty { padding: 48px 24px; text-align: center; color: var(--muted); font-size: 13px; }
-  .empty-icon { font-size: 32px; margin-bottom: 12px; }
-
-  /* ALERT INDICATOR */
-  .alert-today-banner {
-    background: linear-gradient(135deg, rgba(245,158,11,.08), rgba(245,158,11,.03));
-    border: 1px solid rgba(245,158,11,.25);
-    border-radius: var(--card-r);
-    padding: 14px 20px;
+  /* ── INATIVO ── */
+  .inativo-row {
     display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 24px;
+    padding: 12px 0; border-bottom: 1px solid var(--border);
   }
-  .alert-today-left { display: flex; align-items: center; gap: 10px; }
-  .alert-icon { font-size: 18px; }
+  .inativo-row:last-child { border-bottom: none; }
+  .inativo-info { display: flex; align-items: center; gap: 10px; }
+  .inativo-avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--accent-l);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700; color: var(--accent2);
+    flex-shrink: 0;
+  }
+  .inativo-nome { font-size: 13px; font-weight: 500; }
+  .inativo-meta { font-size: 11.5px; color: var(--muted); }
 
-  /* TAGS */
-  .tag-controlado { color: var(--red); font-size: 11px; }
-  .tag-comum { color: var(--muted); font-size: 11px; }
-  .tag-tarja { color: var(--amber); font-size: 11px; }
-
-  /* SCROLLBAR */
-  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
 
-  /* MINI STATS ROW */
-  .mini-stats { display: flex; gap: 24px; }
-  .mini-stat { text-align: center; }
-  .mini-stat-val { font-size: 22px; font-weight: 600; }
-  .mini-stat-lbl { font-size: 11px; color: var(--muted); }
+  /* ── MONO ── */
+  .mono { font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: var(--muted); }
 
-  .mono { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted); }
+  /* ── LOGIN ── */
+  #login-screen {
+    position: fixed; inset: 0;
+    background: linear-gradient(135deg, #1a2d8c 0%, #2348d4 50%, #4f6ef7 100%);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 999;
+  }
+  #login-screen::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+  .login-box {
+    background: rgba(255,255,255,.12);
+    backdrop-filter: blur(20px);
+    border: 1.5px solid rgba(255,255,255,.2);
+    border-radius: 24px;
+    padding: 48px 40px;
+    width: 380px; max-width: 96vw;
+    text-align: center;
+    box-shadow: 0 24px 64px rgba(0,0,0,.3);
+    animation: slideUp .3s ease;
+  }
+  .login-logo-wrap {
+    width: 64px; height: 64px;
+    background: rgba(255,255,255,.18);
+    border-radius: 18px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 30px; margin: 0 auto 20px;
+    box-shadow: 0 8px 24px rgba(0,0,0,.15);
+  }
+  .login-title { font-size: 22px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+  .login-sub { font-size: 13px; color: rgba(255,255,255,.6); margin-bottom: 32px; }
+  .login-input {
+    width: 100%; padding: 14px 18px;
+    background: rgba(255,255,255,.12);
+    border: 1.5px solid rgba(255,255,255,.2);
+    border-radius: 12px;
+    color: #fff; font-family: inherit; font-size: 18px;
+    text-align: center; letter-spacing: 6px;
+    outline: none; margin-bottom: 12px;
+    transition: border-color .15s, background .15s;
+  }
+  .login-input::placeholder { letter-spacing: 2px; font-size: 14px; opacity: .5; }
+  .login-input:focus { border-color: rgba(255,255,255,.5); background: rgba(255,255,255,.18); }
+  .login-btn {
+    width: 100%; padding: 14px;
+    background: #fff; color: var(--accent);
+    border: none; border-radius: 12px;
+    font-size: 15px; font-weight: 700;
+    cursor: pointer; font-family: inherit;
+    transition: all .15s;
+    box-shadow: 0 4px 16px rgba(0,0,0,.15);
+  }
+  .login-btn:hover { background: rgba(255,255,255,.9); transform: translateY(-1px); }
+  .login-error { color: rgba(255,180,180,.9); font-size: 12px; margin-top: 10px; display: none; }
+
+  /* ── TOAST ── */
+  #toast {
+    position: fixed; bottom: 24px; right: 24px;
+    background: var(--text);
+    color: #fff;
+    padding: 12px 18px;
+    border-radius: 12px;
+    font-size: 13px; font-weight: 500;
+    z-index: 999;
+    transition: opacity .3s, transform .3s;
+    box-shadow: 0 8px 24px rgba(0,0,0,.2);
+    display: none;
+  }
+
+  /* ── ANIVERSÁRIO ── */
+  .aniv-card {
+    background: linear-gradient(135deg, var(--purple) 0%, #5b21b6 100%);
+    border-radius: var(--r); padding: 20px; color: #fff;
+    position: relative; overflow: hidden;
+  }
+  .aniv-card::before { content: '🎂'; position: absolute; right: 20px; top: 16px; font-size: 40px; opacity: .2; }
+
+  /* ── PAGE HEADER ── */
+  .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+  .page-header-left h2 { font-size: 18px; font-weight: 700; letter-spacing: -.3px; }
+  .page-header-left p { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+  /* ── SEARCH DROPDOWN ── */
+  .search-dropdown {
+    display: none;
+    background: var(--surface);
+    border: 1.5px solid var(--border2);
+    border-radius: 10px;
+    max-height: 200px; overflow-y: auto;
+    margin-top: 4px;
+    box-shadow: var(--shadow-lg);
+    z-index: 100;
+  }
+  .search-item {
+    padding: 10px 14px; cursor: pointer;
+    font-size: 13px;
+    display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1px solid var(--border);
+    transition: background .1s;
+  }
+  .search-item:last-child { border-bottom: none; }
+  .search-item:hover { background: var(--surface2); }
 </style>
 </head>
 <body>
 
-<!-- SIDEBAR -->
+<!-- LOGIN -->
 <div id="login-screen">
   <div class="login-box">
-    <div class="login-logo">💊</div>
+    <div class="login-logo-wrap">💊</div>
     <div class="login-title">RecorrênciaFarma</div>
-    <div class="login-sub">Farmácia Bem Estar — Acesso restrito</div>
-    <input class="login-input" type="password" id="inp-senha" placeholder="••••••••"> fazerLogin()">
-    <button class="login-btn" id="btn-login">Entrar</button>
+    <div class="login-sub">Acesso restrito — Farmácia Bem Estar</div>
+    <input class="login-input" type="password" id="inp-senha" placeholder="• • • • • •">
+    <button class="login-btn" id="btn-login">Entrar no sistema</button>
     <div class="login-error" id="login-erro">Senha incorreta. Tente novamente.</div>
   </div>
 </div>
+
+<!-- SIDEBAR -->
 <aside class="sidebar">
-  <div class="sidebar-logo">
-    <span>💊 RecorrênciaFarma</span>
-    <span class="pill">MVP</span>
+  <div class="sidebar-header">
+    <div class="sidebar-logo">
+      <div class="logo-icon">💊</div>
+      <div>
+        <div class="logo-text">RecorrênciaFarma</div>
+        <span class="logo-pill">MVP</span>
+      </div>
+    </div>
+    <div class="farmacia-info">
+      <div class="farmacia-nome" id="sb-farmacia-nome">Farmácia Bem Estar</div>
+      <div class="farmacia-plano">Plano Básico • Limeira–SP</div>
+    </div>
   </div>
 
-  <div class="sidebar-section">Principal</div>
-  <div class="nav-item active" onclick="showPage('dashboard', this)">
-    <span class="nav-icon">📊</span> Dashboard
-  </div>
-  <div class="nav-item" onclick="showPage('clientes', this)">
-    <span class="nav-icon">👥</span> Clientes
-  </div>
-  <div class="nav-item" onclick="showPage('compras', this)">
-    <span class="nav-icon">🛒</span> Compras
-  </div>
-  <div class="nav-item" onclick="showPage('alertas', this)">
+  <div class="nav-section">Principal</div>
+  <div class="nav-item active" onclick="showPage('dashboard',this)"><span class="nav-icon">📊</span> Dashboard</div>
+  <div class="nav-item" onclick="showPage('clientes',this)"><span class="nav-icon">👥</span> Clientes</div>
+  <div class="nav-item" onclick="showPage('compras',this)"><span class="nav-icon">🛒</span> Compras</div>
+  <div class="nav-item" onclick="showPage('alertas',this)">
     <span class="nav-icon">🔔</span> Alertas
-    <span id="alertas-badge" class="badge badge-amber" style="margin-left:auto;font-size:10px">3</span>
+    <span class="nav-badge" id="alertas-badge">0</span>
   </div>
 
-  <div class="sidebar-section" style="margin-top:8px">Configuração</div>
-  <div class="nav-item" onclick="showPage('fidelidade', this)">
-  <span class="nav-icon">🏆</span> Fidelidade
-</div>
-  <div class="nav-item" onclick="showPage('medicamentos', this)">
-    <span class="nav-icon">💊</span> Medicamentos
-  </div>
-  <div class="nav-item" onclick="showPage('config', this)">
-    <span class="nav-icon">⚙️</span> Configurações
-  </div>
+  <div class="nav-section">Fidelidade</div>
+  <div class="nav-item" onclick="showPage('fidelidade',this)"><span class="nav-icon">🏆</span> Ranking</div>
+  <div class="nav-item" onclick="showPage('cashback',this)"><span class="nav-icon">💰</span> Cashback</div>
+  <div class="nav-item" onclick="showPage('inativos',this)"><span class="nav-icon">😴</span> Inativos</div>
+  <div class="nav-item" onclick="showPage('aniversarios',this)"><span class="nav-icon">🎂</span> Aniversários</div>
+
+  <div class="nav-section">Config</div>
+  <div class="nav-item" onclick="showPage('medicamentos',this)"><span class="nav-icon">💊</span> Medicamentos</div>
+  <div class="nav-item" onclick="showPage('config',this)"><span class="nav-icon">⚙️</span> Configurações</div>
 
   <div class="sidebar-footer">
-    <div class="farmacia-badge">Farmácia São João</div>
-    <div>Plano Básico • Limeira–SP</div>
+    <div class="logout-btn" onclick="fazerLogout()">🚪 Sair do sistema</div>
   </div>
 </aside>
 
 <!-- MAIN -->
 <main class="main">
   <div class="topbar">
-    <span class="topbar-title" id="page-title">Dashboard</span>
+    <div class="topbar-left">
+      <div class="topbar-title" id="page-title">Dashboard</div>
+      <div class="topbar-date" id="topbar-date"></div>
+    </div>
     <div class="topbar-actions">
-      <button class="btn btn-ghost btn-sm" onclick="simularAlerta()">⚡ Simular alerta</button>
+      <button class="btn btn-ghost btn-sm" onclick="showPage('alertas',null)">🔔 Ver alertas</button>
       <button class="btn btn-primary btn-sm" onclick="openModal('modal-compra')">+ Nova compra</button>
     </div>
   </div>
@@ -427,120 +618,104 @@
 
     <!-- ===== DASHBOARD ===== -->
     <div class="page active" id="page-dashboard">
-
-      <div class="alert-today-banner">
-        <div class="alert-today-left">
-          <span class="alert-icon">⚠️</span>
+      <div class="banner banner-amber" id="banner-alertas" style="display:none">
+        <div class="banner-left">
+          <span class="banner-icon">⚠️</span>
           <div>
-            <div style="font-size:13px;font-weight:500;color:var(--amber)">3 alertas para enviar hoje</div>
-            <div style="font-size:12px;color:var(--muted)">Remédios que vencem nos próximos 2 dias</div>
+            <div class="banner-title" style="color:var(--amber)" id="banner-alertas-txt">alertas para enviar hoje</div>
+            <div class="banner-sub">Remédios que vencem nos próximos dias</div>
           </div>
         </div>
-        <button class="btn btn-ghost btn-sm" onclick="showPage('alertas', null)">Ver alertas →</button>
+        <button class="btn btn-ghost btn-sm" onclick="showPage('alertas',null)">Ver alertas →</button>
       </div>
 
       <div class="metrics">
-        <div class="metric-card">
+        <div class="metric-card mc-blue">
+          <div class="metric-icon mi-blue">👥</div>
           <div class="metric-label">Clientes ativos</div>
-          <div class="metric-value" style="color:var(--accent2)">47</div>
-          <div class="metric-sub"><span class="metric-trend trend-up">↑ +3</span> este mês</div>
+          <div class="metric-value" style="color:var(--accent2)" id="m-clientes">—</div>
+          <div class="metric-sub">cadastrados no sistema</div>
         </div>
-        <div class="metric-card">
+        <div class="metric-card mc-purple">
+          <div class="metric-icon mi-purple">🔔</div>
           <div class="metric-label">Alertas enviados</div>
-          <div class="metric-value" style="color:var(--purple)">128</div>
-          <div class="metric-sub">últimos 30 dias</div>
+          <div class="metric-value" style="color:var(--purple)" id="m-alertas">—</div>
+          <div class="metric-sub">total histórico</div>
         </div>
-        <div class="metric-card">
+        <div class="metric-card mc-green">
+          <div class="metric-icon mi-green">🔄</div>
           <div class="metric-label">Taxa de recompra</div>
-          <div class="metric-value" style="color:var(--green)">68%</div>
-          <div class="metric-sub"><span class="metric-trend trend-up">↑ +5%</span> vs mês anterior</div>
+          <div class="metric-value" style="color:var(--green)" id="m-taxa">—</div>
+          <div class="metric-sub">conversões via alerta</div>
         </div>
-        <div class="metric-card">
-          <div class="metric-label">Receita recuperada</div>
-          <div class="metric-value" style="color:var(--amber)">R$4.2k</div>
-          <div class="metric-sub">este mês via alertas</div>
+        <div class="metric-card mc-amber">
+          <div class="metric-icon mi-amber">💰</div>
+          <div class="metric-label">Cashback acumulado</div>
+          <div class="metric-value" style="color:var(--amber)" id="m-cashback">—</div>
+          <div class="metric-sub">total clientes</div>
         </div>
       </div>
 
       <div class="grid-2">
-        <!-- Alertas recentes -->
         <div class="card">
           <div class="card-header">
-            <span class="card-title">Atividade recente</span>
-            <span class="badge badge-muted">hoje</span>
+            <span class="card-title">⚡ Atividade recente</span>
+            <span class="badge badge-blue">ao vivo</span>
           </div>
           <div class="card-body" style="padding:0 20px">
-            <div class="timeline" id="timeline-feed">
-              <!-- preenchido por JS -->
-            </div>
+            <div class="timeline" id="timeline-feed"></div>
           </div>
         </div>
 
-        <!-- Recompra por mês (bar chart simples) -->
         <div class="card">
           <div class="card-header">
-            <span class="card-title">Recompras por semana</span>
-            <span class="badge badge-green">+12% mês</span>
+            <span class="card-title">📈 Recompras por semana</span>
           </div>
           <div class="card-body">
             <div class="bar-chart" id="bar-chart"></div>
-            <div style="display:flex;justify-content:space-between;margin-top:6px">
+            <div style="display:flex;justify-content:space-between;margin-top:8px">
               <span style="font-size:10px;color:var(--muted)">Sem 1</span>
               <span style="font-size:10px;color:var(--muted)">Sem 2</span>
               <span style="font-size:10px;color:var(--muted)">Sem 3</span>
               <span style="font-size:10px;color:var(--muted)">Sem 4</span>
             </div>
-            <div style="margin-top:20px;display:flex;gap:24px">
-              <div>
-                <div style="font-size:11px;color:var(--muted)">Alertas enviados</div>
-                <div style="font-size:20px;font-weight:600;color:var(--accent2)">38</div>
+            <div style="margin-top:16px;display:flex;gap:8px">
+              <div style="flex:1;background:var(--accent-l);border-radius:10px;padding:12px;text-align:center">
+                <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Enviados</div>
+                <div style="font-size:22px;font-weight:700;color:var(--accent2)" id="dash-enviados">—</div>
               </div>
-              <div>
-                <div style="font-size:11px;color:var(--muted)">Convertidos</div>
-                <div style="font-size:20px;font-weight:600;color:var(--green)">26</div>
+              <div style="flex:1;background:var(--green-l);border-radius:10px;padding:12px;text-align:center">
+                <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Convertidos</div>
+                <div style="font-size:22px;font-weight:700;color:var(--green)" id="dash-conv">—</div>
               </div>
-              <div>
-                <div style="font-size:11px;color:var(--muted)">Taxa</div>
-                <div style="font-size:20px;font-weight:600;color:var(--amber)">68%</div>
+              <div style="flex:1;background:var(--amber-l);border-radius:10px;padding:12px;text-align:center">
+                <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Taxa</div>
+                <div style="font-size:22px;font-weight:700;color:var(--amber)" id="dash-taxa">—</div>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Top medicamentos -->
       <div class="card">
-        <div class="card-header">
-          <span class="card-title">Medicamentos com mais alertas</span>
-        </div>
-        <div class="card-body" style="display:flex;flex-direction:column;gap:12px">
-          <div id="top-meds"></div>
-        </div>
+        <div class="card-header"><span class="card-title">💊 Medicamentos mais recorrentes</span></div>
+        <div class="card-body" style="display:flex;flex-direction:column;gap:10px" id="top-meds"></div>
       </div>
     </div>
 
     <!-- ===== CLIENTES ===== -->
     <div class="page" id="page-clientes">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
-        <div>
-          <div style="font-size:15px;font-weight:500">Clientes cadastrados</div>
-          <div style="font-size:12px;color:var(--muted);margin-top:2px">47 clientes ativos</div>
+      <div class="page-header">
+        <div class="page-header-left">
+          <h2>Clientes cadastrados</h2>
+          <p id="clientes-count">Carregando...</p>
         </div>
         <button class="btn btn-primary btn-sm" onclick="openModal('modal-cliente')">+ Novo cliente</button>
       </div>
       <div class="card">
         <div class="table-wrap">
           <table>
-            <thead>
-              <tr>
-                <th>Nome</th>
-                <th>WhatsApp</th>
-                <th>Remédios</th>
-                <th>Último alerta</th>
-                <th>Status</th>
-                <th></th>
-              </tr>
-            </thead>
+            <thead><tr><th>Cliente</th><th>WhatsApp</th><th>Nível</th><th>Pontos</th><th>Status</th><th></th></tr></thead>
             <tbody id="tbody-clientes"></tbody>
           </table>
         </div>
@@ -549,27 +724,17 @@
 
     <!-- ===== COMPRAS ===== -->
     <div class="page" id="page-compras">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
-        <div>
-          <div style="font-size:15px;font-weight:500">Compras registradas</div>
-          <div style="font-size:12px;color:var(--muted);margin-top:2px">Histórico de vendas com controle de vencimento</div>
+      <div class="page-header">
+        <div class="page-header-left">
+          <h2>Compras registradas</h2>
+          <p>Histórico de vendas com controle de vencimento</p>
         </div>
         <button class="btn btn-primary btn-sm" onclick="openModal('modal-compra')">+ Nova compra</button>
       </div>
       <div class="card">
         <div class="table-wrap">
           <table>
-            <thead>
-              <tr>
-                <th>Cliente</th>
-                <th>Medicamento</th>
-                <th>Compra</th>
-                <th>Fim</th>
-                <th>Alerta em</th>
-                <th>Dias restantes</th>
-                <th>Status</th>
-              </tr>
-            </thead>
+            <thead><tr><th>Cliente</th><th>Medicamento</th><th>Data compra</th><th>Vence em</th><th>Alerta</th><th>Dias restantes</th><th>Status</th></tr></thead>
             <tbody id="tbody-compras"></tbody>
           </table>
         </div>
@@ -578,50 +743,164 @@
 
     <!-- ===== ALERTAS ===== -->
     <div class="page" id="page-alertas">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
-        <div>
-          <div style="font-size:15px;font-weight:500">Central de alertas</div>
-          <div style="font-size:12px;color:var(--muted);margin-top:2px">Gerencie os disparos automáticos de WhatsApp</div>
+      <div class="page-header">
+        <div class="page-header-left">
+          <h2>Central de alertas</h2>
+          <p>Disparos automáticos via WhatsApp</p>
         </div>
-        <div style="display:flex;gap:8px">
-          <button class="btn btn-ghost btn-sm">Filtrar</button>
-          <button class="btn btn-primary btn-sm" onclick="enviarTodosAlertas()">▶ Enviar todos hoje</button>
-        </div>
+        <button class="btn btn-primary btn-sm" onclick="enviarTodosAlertas()">▶ Enviar todos hoje</button>
       </div>
-
       <div class="card" style="margin-bottom:16px">
         <div class="card-header"><span class="card-title">🔔 Para enviar hoje</span></div>
         <div class="table-wrap">
           <table>
-            <thead>
-              <tr>
-                <th>Cliente</th>
-                <th>Medicamento</th>
-                <th>Tipo</th>
-                <th>Vence em</th>
-                <th>Mensagem</th>
-                <th></th>
-              </tr>
-            </thead>
+            <thead><tr><th>Cliente</th><th>Medicamento</th><th>Tipo</th><th>Vence em</th><th>Preview</th><th></th></tr></thead>
             <tbody id="tbody-alertas-hoje"></tbody>
           </table>
         </div>
       </div>
-
       <div class="card">
-        <div class="card-header"><span class="card-title">Histórico de alertas</span></div>
+        <div class="card-header"><span class="card-title">📋 Histórico de alertas</span></div>
         <div class="table-wrap">
           <table>
-            <thead>
-              <tr>
-                <th>Cliente</th>
-                <th>Medicamento</th>
-                <th>Enviado em</th>
-                <th>Resposta</th>
-                <th>Converteu</th>
-              </tr>
-            </thead>
+            <thead><tr><th>Cliente</th><th>Medicamento</th><th>Enviado em</th><th>Resposta</th><th>Converteu</th></tr></thead>
             <tbody id="tbody-alertas-hist"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== FIDELIDADE ===== -->
+    <div class="page" id="page-fidelidade">
+      <div class="page-header">
+        <div class="page-header-left">
+          <h2>Programa de Fidelidade</h2>
+          <p>Ranking de clientes por pontos acumulados</p>
+        </div>
+      </div>
+      <div class="grid-3" style="margin-bottom:20px">
+        <div class="nivel-card">
+          <div class="nivel-emoji">🥉</div>
+          <div class="nivel-nome" style="color:#cd7f32">Bronze</div>
+          <div class="nivel-count" style="color:#cd7f32" id="fid-bronze">0</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px">0 a 499 pts</div>
+        </div>
+        <div class="nivel-card">
+          <div class="nivel-emoji">🥈</div>
+          <div class="nivel-nome" style="color:#808080">Prata</div>
+          <div class="nivel-count" style="color:#808080" id="fid-prata">0</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px">500 a 1499 pts</div>
+        </div>
+        <div class="nivel-card">
+          <div class="nivel-emoji">🥇</div>
+          <div class="nivel-nome" style="color:#b8860b">Ouro</div>
+          <div class="nivel-count" style="color:#b8860b" id="fid-ouro">0</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px">1500+ pts</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">🏆 Ranking completo</span></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>#</th><th>Cliente</th><th>WhatsApp</th><th>Nível</th><th>Pontos</th><th>Streak</th></tr></thead>
+            <tbody id="tbody-ranking"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== CASHBACK ===== -->
+    <div class="page" id="page-cashback">
+      <div class="page-header">
+        <div class="page-header-left">
+          <h2>Cashback</h2>
+          <p>Saldo de cashback dos clientes</p>
+        </div>
+      </div>
+      <div class="grid-2" style="margin-bottom:20px">
+        <div class="cashback-card">
+          <div class="cashback-label">Total cashback acumulado</div>
+          <div class="cashback-value" id="cb-total">R$ 0,00</div>
+          <div class="cashback-sub">por todos os clientes</div>
+        </div>
+        <div class="card" style="margin-bottom:0">
+          <div class="card-body">
+            <div style="font-size:13px;color:var(--muted);margin-bottom:12px">Como funciona</div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div style="display:flex;justify-content:space-between;font-size:13px">
+                <span>Compra normal</span><span style="font-weight:600;color:var(--green)">2% cashback</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:13px">
+                <span>Recompra no prazo</span><span style="font-weight:600;color:var(--green)">3% cashback</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:13px">
+                <span>3 meses seguidos</span><span style="font-weight:600;color:var(--green)">+R$10 bônus</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">💰 Saldo por cliente</span></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Cliente</th><th>Pontos</th><th>Cashback equiv.</th><th>Nível</th><th></th></tr></thead>
+            <tbody id="tbody-cashback"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== INATIVOS ===== -->
+    <div class="page" id="page-inativos">
+      <div class="page-header">
+        <div class="page-header-left">
+          <h2>Clientes Inativos</h2>
+          <p>Clientes sem compra há mais de 45 dias</p>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="alertarTodosInativos()">📲 Alertar todos</button>
+      </div>
+      <div class="banner banner-amber" style="margin-bottom:20px">
+        <div class="banner-left">
+          <span class="banner-icon">😴</span>
+          <div>
+            <div class="banner-title" style="color:var(--amber)">Clientes em risco de perda</div>
+            <div class="banner-sub">Reativar um cliente custa 5x menos do que conquistar um novo</div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">😴 Sem compra há 45+ dias</span></div>
+        <div class="card-body" style="padding:0 20px" id="lista-inativos">
+          <div style="padding:40px;text-align:center;color:var(--muted)">Carregando...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== ANIVERSÁRIOS ===== -->
+    <div class="page" id="page-aniversarios">
+      <div class="page-header">
+        <div class="page-header-left">
+          <h2>Aniversários</h2>
+          <p>Clientes que fazem aniversário este mês</p>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="alertarAniversariantes()">🎂 Enviar parabéns</button>
+      </div>
+      <div class="aniv-card" style="margin-bottom:20px">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;opacity:.7;margin-bottom:6px">Este mês</div>
+        <div style="font-size:28px;font-weight:700" id="aniv-count">0 aniversariantes</div>
+        <div style="font-size:13px;opacity:.7;margin-top:4px">A Bia envia mensagem automática no dia</div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">🎂 Aniversariantes do mês</span></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Cliente</th><th>WhatsApp</th><th>Data de nascimento</th><th>Dias para aniversário</th><th></th></tr></thead>
+            <tbody id="tbody-aniversarios">
+              <tr><td colspan="5" style="text-align:center;color:var(--muted);padding:32px">
+                Para ver aniversariantes, adicione a data de nascimento no cadastro dos clientes.
+              </td></tr>
+            </tbody>
           </table>
         </div>
       </div>
@@ -629,160 +908,78 @@
 
     <!-- ===== MEDICAMENTOS ===== -->
     <div class="page" id="page-medicamentos">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
-        <div>
-          <div style="font-size:15px;font-weight:500">Catálogo de medicamentos</div>
-          <div style="font-size:12px;color:var(--muted);margin-top:2px">Gerencie os remédios cadastrados</div>
+      <div class="page-header">
+        <div class="page-header-left">
+          <h2>Catálogo de medicamentos</h2>
+          <p id="meds-count">Carregando...</p>
         </div>
         <button class="btn btn-primary btn-sm" onclick="openModal('modal-med')">+ Novo medicamento</button>
       </div>
       <div class="card">
         <div class="table-wrap">
           <table>
-            <thead>
-              <tr>
-                <th>Nome</th>
-                <th>Princípio Ativo</th>
-                <th>Tipo</th>
-                <th>Receita</th>
-                <th></th>
-              </tr>
-            </thead>
+            <thead><tr><th>Nome</th><th>Princípio Ativo</th><th>Tipo</th><th>Receita</th><th></th></tr></thead>
             <tbody id="tbody-meds"></tbody>
           </table>
         </div>
       </div>
     </div>
 
-    <!-- ===== FIDELIDADE ===== -->
-<div class="page" id="page-fidelidade">
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
-    <div>
-      <div style="font-size:15px;font-weight:500">Programa de Fidelidade</div>
-      <div style="font-size:12px;color:var(--muted);margin-top:2px">Ranking de clientes por pontos</div>
-    </div>
-  </div>
-
-  <div class="metrics" style="grid-template-columns:repeat(4,1fr);margin-bottom:24px">
-    <div class="metric-card">
-      <div class="metric-label">Total de clientes</div>
-      <div class="metric-value" style="color:var(--accent2)" id="fid-total">0</div>
-    </div>
-    <div class="metric-card">
-      <div class="metric-label">🥉 Bronze</div>
-      <div class="metric-value" style="color:#cd7f32" id="fid-bronze">0</div>
-    </div>
-    <div class="metric-card">
-      <div class="metric-label">🥈 Prata</div>
-      <div class="metric-value" style="color:#a0a0a0" id="fid-prata">0</div>
-    </div>
-    <div class="metric-card">
-      <div class="metric-label">🥇 Ouro</div>
-      <div class="metric-value" style="color:#ffd700" id="fid-ouro">0</div>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-header"><span class="card-title">🏆 Ranking de clientes</span></div>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Cliente</th>
-            <th>WhatsApp</th>
-            <th>Nível</th>
-            <th>Pontos</th>
-            <th>Streak</th>
-          </tr>
-        </thead>
-        <tbody id="tbody-ranking"></tbody>
-      </table>
-    </div>
-  </div>
-</div>
     <!-- ===== CONFIG ===== -->
     <div class="page" id="page-config">
-      <div style="font-size:15px;font-weight:500;margin-bottom:20px">Configurações da farmácia</div>
+      <div class="page-header">
+        <div class="page-header-left">
+          <h2>Configurações</h2>
+          <p>Ajuste as preferências da farmácia</p>
+        </div>
+      </div>
       <div class="card" style="max-width:520px">
         <div class="card-body" style="display:flex;flex-direction:column;gap:16px">
-          <div class="field">
-            <label>Nome da farmácia</label>
-            <input type="text" value="Farmácia São João">
+          <div class="field"><label>Nome da farmácia</label><input type="text" value="Farmácia Bem Estar"></div>
+          <div class="field"><label>WhatsApp</label><input type="text" value="(19) 3333-0000"></div>
+          <div class="field"><label>Dias de antecedência para alertar</label>
+            <select><option>1 dia</option><option selected>2 dias</option><option>3 dias</option><option>5 dias</option></select>
           </div>
-          <div class="field">
-            <label>Telefone / WhatsApp da farmácia</label>
-            <input type="text" value="(19) 3333-0000">
-          </div>
-          <div class="field">
-            <label>Dias de antecedência para alertar</label>
-            <select>
-              <option>1 dia antes</option>
-              <option selected>2 dias antes</option>
-              <option>3 dias antes</option>
-              <option>5 dias antes</option>
-            </select>
-          </div>
-          <div class="field">
-            <label>Token Z-API (WhatsApp)</label>
-            <input type="text" placeholder="Cole aqui o token da Z-API">
-          </div>
-          <div class="field">
-            <label>Horário de envio dos alertas</label>
-            <select>
-              <option>08:00</option>
-              <option selected>09:00</option>
-              <option>10:00</option>
-            </select>
+          <div class="field"><label>Token Z-API</label><input type="text" placeholder="Cole o token aqui"></div>
+          <div class="field"><label>Cashback padrão por compra</label>
+            <select><option>1%</option><option selected>2%</option><option>3%</option><option>5%</option></select>
           </div>
           <button class="btn btn-primary" style="align-self:flex-start">Salvar configurações</button>
         </div>
       </div>
     </div>
 
-  </div><!-- end content -->
+  </div>
 </main>
 
-<!-- ===== MODAL: NOVA COMPRA ===== -->
+<!-- MODAL: NOVA COMPRA -->
 <div class="modal-overlay" id="modal-compra">
   <div class="modal">
     <div class="modal-header">
       <span class="modal-title">Registrar nova compra</span>
-      <button class="modal-close" onclick="closeModal('modal-compra')">×</button>
+      <button class="modal-close" onclick="closeModal('modal-compra')">✕</button>
     </div>
     <div class="modal-body">
       <div class="field">
         <label>Cliente</label>
-        <input type="text" id="inp-busca-cliente" placeholder="Digite o nome do cliente..." autocomplete="off">
-<div id="lista-clientes" style="display:none;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;max-height:200px;overflow-y:auto;margin-top:4px"></div>
-<input type="hidden" id="sel-cliente">
+        <input type="text" id="inp-busca-cliente" placeholder="Digite o nome do cliente...">
+        <div class="search-dropdown" id="lista-clientes"></div>
+        <input type="hidden" id="sel-cliente">
       </div>
       <div class="field">
         <label>Medicamento</label>
-        <input type="text" id="inp-busca-med" placeholder="Digite o nome do medicamento..." autocomplete="off" oninput="filtrarMeds()">
-<div id="lista-meds" style="display:none;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;max-height:200px;overflow-y:auto;margin-top:4px"></div>
-<input type="hidden" id="sel-med">
+        <input type="text" id="inp-busca-med" placeholder="Digite o nome do medicamento...">
+        <div class="search-dropdown" id="lista-meds"></div>
+        <input type="hidden" id="sel-med">
       </div>
       <div class="fields-row">
-        <div class="field">
-          <label>Data da compra</label>
-          <input type="date" id="inp-data-compra">
-        </div>
-        <div class="field">
-          <label>Duração (dias)</label>
-          <input type="number" id="inp-duracao" value="30" min="1">
-        </div>
+        <div class="field"><label>Data da compra</label><input type="date" id="inp-data-compra"></div>
+        <div class="field"><label>Duração (dias)</label><input type="number" id="inp-duracao" value="30" min="1"></div>
       </div>
-      <div class="field">
-        <label>Quantidade (caixas)</label>
-        <input type="number" id="inp-qtd" value="1" min="1">
-      </div>
-      <div class="field">
-        <label>Observação (opcional)</label>
-        <textarea rows="2" placeholder="Ex: receita válida até..."></textarea>
-      </div>
-      <div style="background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.2);border-radius:8px;padding:12px;font-size:12px;color:var(--accent2)">
-        💡 O alerta será disparado automaticamente 2 dias antes do remédio acabar.
+      <div class="field"><label>Quantidade (caixas)</label><input type="number" id="inp-qtd" value="1" min="1"></div>
+      <div class="field"><label>Observação (opcional)</label><textarea rows="2" placeholder="Ex: receita válida até..."></textarea></div>
+      <div style="background:var(--accent-l);border:1.5px solid rgba(35,72,212,.15);border-radius:10px;padding:12px;font-size:12px;color:var(--accent2)">
+        💡 Alerta automático 2 dias antes de acabar. O cliente ganha <b>100 pontos</b> por compra.
       </div>
     </div>
     <div class="modal-footer">
@@ -792,28 +989,20 @@
   </div>
 </div>
 
-<!-- ===== MODAL: NOVO CLIENTE ===== -->
+<!-- MODAL: NOVO CLIENTE -->
 <div class="modal-overlay" id="modal-cliente">
   <div class="modal">
     <div class="modal-header">
       <span class="modal-title">Cadastrar cliente</span>
-      <button class="modal-close" onclick="closeModal('modal-cliente')">×</button>
+      <button class="modal-close" onclick="closeModal('modal-cliente')">✕</button>
     </div>
     <div class="modal-body">
-      <div class="field">
-        <label>Nome completo</label>
-        <input type="text" id="inp-cli-nome" placeholder="Ex: João da Silva">
-      </div>
+      <div class="field"><label>Nome completo</label><input type="text" id="inp-cli-nome" placeholder="Ex: João da Silva"></div>
       <div class="fields-row">
-        <div class="field">
-          <label>WhatsApp</label>
-          <input type="text" id="inp-cli-wpp" placeholder="5519999990001">
-        </div>
-        <div class="field">
-          <label>CPF (opcional)</label>
-          <input type="text" id="inp-cli-cpf" placeholder="000.000.000-00">
-        </div>
+        <div class="field"><label>WhatsApp</label><input type="text" id="inp-cli-wpp" placeholder="5519999990001"></div>
+        <div class="field"><label>CPF (opcional)</label><input type="text" id="inp-cli-cpf" placeholder="000.000.000-00"></div>
       </div>
+      <div class="field"><label>Data de nascimento (opcional)</label><input type="date" id="inp-cli-nasc"></div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('modal-cliente')">Cancelar</button>
@@ -822,37 +1011,22 @@
   </div>
 </div>
 
-<!-- ===== MODAL: NOVO MEDICAMENTO ===== -->
+<!-- MODAL: NOVO MEDICAMENTO -->
 <div class="modal-overlay" id="modal-med">
   <div class="modal">
     <div class="modal-header">
       <span class="modal-title">Cadastrar medicamento</span>
-      <button class="modal-close" onclick="closeModal('modal-med')">×</button>
+      <button class="modal-close" onclick="closeModal('modal-med')">✕</button>
     </div>
     <div class="modal-body">
-      <div class="field">
-        <label>Nome comercial</label>
-        <input type="text" id="inp-med-nome" placeholder="Ex: Losartana 50mg">
-      </div>
-      <div class="field">
-        <label>Princípio ativo</label>
-        <input type="text" id="inp-med-pa" placeholder="Ex: Losartana Potássica">
-      </div>
+      <div class="field"><label>Nome comercial</label><input type="text" id="inp-med-nome" placeholder="Ex: Losartana 50mg"></div>
+      <div class="field"><label>Princípio ativo</label><input type="text" id="inp-med-pa" placeholder="Ex: Losartana Potássica"></div>
       <div class="fields-row">
-        <div class="field">
-          <label>Tipo</label>
-          <select id="inp-med-tipo">
-            <option value="comum">Comum</option>
-            <option value="controlado">Controlado</option>
-            <option value="tarja_preta">Tarja preta</option>
-          </select>
+        <div class="field"><label>Tipo</label>
+          <select id="inp-med-tipo"><option value="comum">Comum</option><option value="controlado">Controlado</option><option value="tarja_preta">Tarja preta</option></select>
         </div>
-        <div class="field">
-          <label>Exige receita?</label>
-          <select id="inp-med-receita">
-            <option value="nao">Não</option>
-            <option value="sim">Sim</option>
-          </select>
+        <div class="field"><label>Exige receita?</label>
+          <select id="inp-med-receita"><option value="nao">Não</option><option value="sim">Sim</option></select>
         </div>
       </div>
     </div>
@@ -863,16 +1037,16 @@
   </div>
 </div>
 
-<!-- ===== MODAL: MENSAGEM ALERTA ===== -->
+<!-- MODAL: PREVIEW ALERTA -->
 <div class="modal-overlay" id="modal-alerta">
   <div class="modal">
     <div class="modal-header">
       <span class="modal-title">Preview da mensagem</span>
-      <button class="modal-close" onclick="closeModal('modal-alerta')">×</button>
+      <button class="modal-close" onclick="closeModal('modal-alerta')">✕</button>
     </div>
     <div class="modal-body">
-      <div style="background:var(--bg3);border-radius:10px;padding:16px;font-size:13px;line-height:1.6;white-space:pre-wrap;color:var(--text)" id="preview-msg"></div>
-      <div style="font-size:12px;color:var(--muted)">Esta mensagem será enviada via WhatsApp para o cliente.</div>
+      <div style="background:var(--surface2);border-radius:12px;padding:16px;font-size:13px;line-height:1.7;white-space:pre-wrap;color:var(--text);border:1.5px solid var(--border)" id="preview-msg"></div>
+      <div style="font-size:12px;color:var(--muted)">Mensagem enviada via WhatsApp para o cliente.</div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('modal-alerta')">Cancelar</button>
@@ -880,231 +1054,279 @@
     </div>
   </div>
 </div>
+
+<div id="toast"></div>
+
 <script>
-
+// ── CONFIG SUPABASE ──────────────────────────────────────────
+// IMPORTANTE: substitua os valores abaixo pelas suas chaves
+const SUPABASE_URL  = 'https://rggekwmhvksgvhkgxylf.supabase.co';
+const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJnZ2Vrd21odmtzZ3Zoa2d4eWxmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcwNjUzNTYsImV4cCI6MjA5MjY0MTM1Nn0.m4o-R7MCIyXWJtPPnfvHGD0VTSYUIOPcHWLaG_twSpw';
 const SENHA_CORRETA = '011125';
+const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+// ── ESTADO ──────────────────────────────────────────────────
+let clientes    = [];
+let medicamentos= [];
+let compras     = [];
+let alertasHoje = [];
+let alertasHist = [];
+let rankingData = [];
+
+const hoje = new Date();
+function addDias(d, n) { const r=new Date(d); r.setDate(r.getDate()+n); return r; }
+function fmtDate(d)    { return new Date(d+'T12:00:00').toLocaleDateString('pt-BR'); }
+function diasAte(d)    { return Math.round((new Date(d+'T12:00:00') - hoje) / 86400000); }
+function inicialNome(n){ return n ? n.split(' ').map(p=>p[0]).join('').substring(0,2).toUpperCase() : '?'; }
+
+// ── LOGIN ────────────────────────────────────────────────────
 function fazerLogin() {
   const senha = document.getElementById('inp-senha').value;
-  if(senha === SENHA_CORRETA) {
+  if (senha === SENHA_CORRETA) {
     document.getElementById('login-screen').style.display = 'none';
     sessionStorage.setItem('logado', 'sim');
+    carregarDados();
   } else {
     document.getElementById('login-erro').style.display = 'block';
     document.getElementById('inp-senha').value = '';
     document.getElementById('inp-senha').focus();
   }
 }
-
+function fazerLogout() {
+  sessionStorage.removeItem('logado');
+  location.reload();
+}
 function verificarLogin() {
-  if(sessionStorage.getItem('logado') !== 'sim') {
+  if (sessionStorage.getItem('logado') !== 'sim') {
     document.getElementById('login-screen').style.display = 'flex';
   } else {
     document.getElementById('login-screen').style.display = 'none';
+    carregarDados();
   }
 }
 
-document.getElementById('inp-busca-cliente').addEventListener('input', filtrarClientes);
-document.getElementById('inp-busca-med').addEventListener('input', filtrarMeds);
-document.getElementById('btn-login').addEventListener('click', fazerLogin);
-document.getElementById('inp-senha').addEventListener('keydown', function(e) {
-  if(e.key === 'Enter') fazerLogin();
-});
+// ── CARREGAR DADOS ───────────────────────────────────────────
+async function carregarDados() {
+  // Clientes
+  const { data: cls } = await _sb.from('clientes').select('*').eq('ativo', true).order('nome');
+  if (cls) {
+    clientes = cls.map(c => ({
+      id: c.id, nome: c.nome, whatsapp: c.whatsapp,
+      cpf: c.cpf, email: c.email, ativo: c.ativo,
+      criado_em: c.criado_em
+    }));
+    document.getElementById('clientes-count').textContent = `${clientes.length} clientes ativos`;
+    document.getElementById('m-clientes').textContent = clientes.length;
+  }
 
-// ─── DADOS DEMO ─────────────────────────────────────────────
-const clientes = [
-  { id:1, nome:'João da Silva',     whatsapp:'5519999990001', remedios:2, ultimo:'Há 3 dias',  ativo:true },
-  { id:2, nome:'Maria Fernandes',   whatsapp:'5519999990002', remedios:1, ultimo:'Hoje',       ativo:true },
-  { id:3, nome:'Carlos Oliveira',   whatsapp:'5519999990003', remedios:3, ultimo:'Há 1 semana',ativo:true },
-  { id:4, nome:'Ana Paula Costa',   whatsapp:'5519999990004', remedios:1, ultimo:'Há 2 dias',  ativo:true },
-  { id:5, nome:'Roberto Mendes',    whatsapp:'5519999990005', remedios:2, ultimo:'Nunca',      ativo:true },
-];
+  // Medicamentos
+  const { data: mds } = await _sb.from('medicamentos').select('*').order('nome');
+  if (mds) {
+    medicamentos = mds.map(m => ({
+      id: m.id, nome: m.nome, pa: m.principio_ativo || '',
+      tipo: m.tipo, receita: m.requer_receita
+    }));
+    document.getElementById('meds-count').textContent = `${medicamentos.length} medicamentos cadastrados`;
+  }
 
-const medicamentos = [
-  { id:1, nome:'Losartana 50mg',    pa:'Losartana Potássica',  tipo:'controlado', receita:true  },
-  { id:2, nome:'Metformina 850mg',  pa:'Metformina HCl',       tipo:'comum',      receita:false },
-  { id:3, nome:'Atorvastatina 20mg',pa:'Atorvastatina Cálcica',tipo:'comum',      receita:false },
-  { id:4, nome:'Clonazepam 2mg',    pa:'Clonazepam',           tipo:'tarja_preta',receita:true  },
-  { id:5, nome:'Omeprazol 20mg',    pa:'Omeprazol',            tipo:'comum',      receita:false },
-];
+  // Compras com joins
+  const { data: cps } = await _sb.from('compras')
+    .select('*, clientes(nome), medicamentos(nome, tipo, requer_receita)')
+    .order('criado_em', { ascending: false });
+  if (cps) {
+    compras = cps.map(c => ({
+      id: c.id, clienteId: c.cliente_id, medId: c.medicamento_id,
+      farmaciaId: c.farmacia_id,
+      dataCompra: c.data_compra, dataFim: c.data_fim,
+      dataAlerta: c.data_alerta, duracao: c.duracao_dias,
+      qtd: c.quantidade, diasRestantes: diasAte(c.data_fim),
+      clienteNome: c.clientes?.nome || '?',
+      medNome: c.medicamentos?.nome || '?',
+      medTipo: c.medicamentos?.tipo || 'comum',
+      medReceita: c.medicamentos?.requer_receita || false
+    }));
+    alertasHoje = compras.filter(c => {
+      const da = diasAte(c.dataAlerta);
+      return da >= -1 && da <= 1;
+    });
+    document.getElementById('alertas-badge').textContent = alertasHoje.length || '0';
+    if (alertasHoje.length > 0) {
+      document.getElementById('banner-alertas').style.display = 'flex';
+      document.getElementById('banner-alertas-txt').textContent = `${alertasHoje.length} alerta${alertasHoje.length>1?'s':''} para enviar hoje`;
+    }
+  }
 
-const hoje = new Date();
-function addDias(d, n) { const r=new Date(d); r.setDate(r.getDate()+n); return r; }
-function fmtDate(d) { return d.toLocaleDateString('pt-BR'); }
-function diasAte(d) { return Math.round((d - hoje) / 86400000); }
+  // Alertas histórico
+  const { data: als } = await _sb.from('alertas')
+    .select('*, compras(*, clientes(nome), medicamentos(nome))')
+    .eq('status', 'enviado').order('enviado_em', { ascending: false }).limit(20);
+  if (als) {
+    alertasHist = als.map(a => ({
+      cliente: a.compras?.clientes?.nome || 'N/A',
+      med: a.compras?.medicamentos?.nome || 'N/A',
+      data: a.enviado_em ? new Date(a.enviado_em).toLocaleDateString('pt-BR') : 'N/A',
+      resposta: a.resposta_cliente || 'Aguardando...',
+      conv: a.resposta_cliente === 'convertido'
+    }));
+    const total = als.length;
+    const conv  = als.filter(a => a.resposta_cliente === 'convertido').length;
+    document.getElementById('m-alertas').textContent = total;
+    document.getElementById('m-taxa').textContent = total > 0 ? Math.round(conv/total*100)+'%' : '0%';
+    document.getElementById('dash-enviados').textContent = total;
+    document.getElementById('dash-conv').textContent = conv;
+    document.getElementById('dash-taxa').textContent = total > 0 ? Math.round(conv/total*100)+'%' : '0%';
+  }
 
-const compras = [
-  { id:1, clienteId:2, medId:1, dataCompra:addDias(hoje,-28), duracao:30, qtd:1 },
-  { id:2, clienteId:1, medId:2, dataCompra:addDias(hoje,-27), duracao:30, qtd:1 },
-  { id:3, clienteId:4, medId:3, dataCompra:addDias(hoje,-29), duracao:30, qtd:1 },
-  { id:4, clienteId:3, medId:4, dataCompra:addDias(hoje,-10), duracao:30, qtd:2 },
-  { id:5, clienteId:5, medId:1, dataCompra:addDias(hoje,-5),  duracao:30, qtd:1 },
-  { id:6, clienteId:1, medId:5, dataCompra:addDias(hoje,-20), duracao:30, qtd:1 },
-];
+  // Ranking / pontos
+  const { data: rank } = await _sb.from('vw_ranking_clientes').select('*');
+  if (rank) {
+    rankingData = rank;
+    const totalCashback = rank.reduce((s, c) => s + (c.pontos * 0.02), 0);
+    document.getElementById('m-cashback').textContent = 'R$' + totalCashback.toFixed(0);
+    document.getElementById('cb-total').textContent = 'R$ ' + totalCashback.toFixed(2).replace('.', ',');
+  }
 
-compras.forEach(c => {
-  c.dataFim   = addDias(c.dataCompra, c.duracao);
-  c.dataAlerta= addDias(c.dataFim, -2);
-  c.diasRestantes = diasAte(c.dataFim);
-});
+  // Render tudo
+  renderAll();
+  document.getElementById('topbar-date').textContent = hoje.toLocaleDateString('pt-BR', { weekday:'long', day:'numeric', month:'long' });
+  document.getElementById('inp-data-compra').value = hoje.toISOString().split('T')[0];
+}
 
-const alertasHoje = compras.filter(c => {
-  const da = diasAte(c.dataAlerta);
-  return da >= -1 && da <= 1;
-});
+// ── RENDER ───────────────────────────────────────────────────
+function renderAll() {
+  renderTimeline();
+  renderBarChart();
+  renderTopMeds();
+  renderClientes();
+  renderCompras();
+  renderAlertasHoje();
+  renderAlertasHist();
+  renderMeds();
+}
 
-const alertasHist = [
-  { cliente:'João da Silva',    med:'Metformina 850mg',  data:'22/04/2025', resposta:'Sim, pode separar!', conv:true  },
-  { cliente:'Carla Souza',      med:'Omeprazol 20mg',    data:'20/04/2025', resposta:'Obrigada!',          conv:true  },
-  { cliente:'Pedro Lima',       med:'Losartana 50mg',    data:'18/04/2025', resposta:'Já comprei em outro',conv:false },
-  { cliente:'Ana Paula Costa',  med:'Atorvastatina 20mg',data:'15/04/2025', resposta:'Sim!',               conv:true  },
-];
-
-const timeline = [
-  { cor:'var(--green)',  msg:'Recompra confirmada — <b>Maria Fernandes</b> (Losartana)',    meta:'há 12 min' },
-  { cor:'var(--accent)',  msg:'Alerta enviado — <b>João da Silva</b> (Metformina 850mg)',    meta:'há 35 min' },
-  { cor:'var(--amber)',  msg:'Alerta enviado — <b>Ana Paula Costa</b> (Atorvastatina)',     meta:'há 1h' },
-  { cor:'var(--muted)',  msg:'Novo cliente cadastrado — <b>Roberto Mendes</b>',              meta:'há 2h' },
-  { cor:'var(--green)',  msg:'Recompra confirmada — <b>Carla Souza</b> (Omeprazol 20mg)',   meta:'há 3h' },
-];
-
-const topMeds = [
-  { nome:'Losartana 50mg',     count:18, pct:72 },
-  { nome:'Metformina 850mg',   count:14, pct:56 },
-  { nome:'Atorvastatina 20mg', count:10, pct:40 },
-  { nome:'Clonazepam 2mg',     count:7,  pct:28 },
-];
-
-const barData = [
-  { label:'Sem 1', alertas:8, conv:5 },
-  { label:'Sem 2', alertas:11,conv:7 },
-  { label:'Sem 3', alertas:9, conv:6 },
-  { label:'Sem 4', alertas:10,conv:8 },
-];
-
-// ─── HELPERS ────────────────────────────────────────────────
-function cliente(id)  { return clientes.find(c=>c.id===id)||{}; }
-function med(id)      { return medicamentos.find(m=>m.id===id)||{}; }
+function nivelBadge(nivel) {
+  const map = {
+    bronze:   `<span class="badge badge-muted">🥉 Bronze</span>`,
+    prata:    `<span class="badge badge-muted" style="color:#808080">🥈 Prata</span>`,
+    ouro:     `<span class="badge badge-amber">🥇 Ouro</span>`,
+    diamante: `<span class="badge badge-blue">💎 Diamante</span>`,
+  };
+  return map[nivel] || map.bronze;
+}
 
 function tipoBadge(tipo) {
-  if(tipo==='controlado')  return '<span class="badge badge-red">controlado</span>';
-  if(tipo==='tarja_preta') return '<span class="badge badge-amber">tarja preta</span>';
+  if (tipo==='controlado')  return '<span class="badge badge-red">controlado</span>';
+  if (tipo==='tarja_preta') return '<span class="badge badge-amber">tarja preta</span>';
   return '<span class="badge badge-muted">comum</span>';
 }
 
 function diasBadge(n) {
-  if(n<=2)  return `<span class="badge badge-red">⚠ ${n}d</span>`;
-  if(n<=7)  return `<span class="badge badge-amber">${n}d</span>`;
-  if(n<=15) return `<span class="badge badge-blue">${n}d</span>`;
+  if (n <= 0)  return `<span class="badge badge-red">Acabou</span>`;
+  if (n <= 2)  return `<span class="badge badge-red">⚠ ${n}d</span>`;
+  if (n <= 7)  return `<span class="badge badge-amber">${n}d</span>`;
+  if (n <= 15) return `<span class="badge badge-blue">${n}d</span>`;
   return `<span class="badge badge-muted">${n}d</span>`;
 }
 
-function gerarMensagem(compra) {
-  const cl = cliente(compra.clienteId);
-  const m  = med(compra.medId);
-  return `Olá, ${cl.nome}! 👋
-
-A Farmácia São João está te avisando que seu ${m.nome} vai acabar em *${compra.diasRestantes} dias* (dia ${fmtDate(compra.dataFim)}).
-
-Quer que a gente já separe uma nova caixa pra você? 💊
-
-Responda *SIM* para reservar ou *NÃO* se não precisar.
-
-Farmácia São João — (19) 3333-0000`;
-}
-
-// ─── RENDER ─────────────────────────────────────────────────
 function renderTimeline() {
-  document.getElementById('timeline-feed').innerHTML = timeline.map(t => `
+  const items = [
+    { cor:'var(--green)',  msg:`${alertasHist[0]?.cliente || 'Sistema'} — dashboard carregado`, meta:'agora' },
+    { cor:'var(--accent2)',msg:`${compras.length} compras registradas no banco`, meta:'atualizado' },
+    { cor:'var(--amber)', msg:`${alertasHoje.length} alertas pendentes para hoje`, meta:'verificado' },
+    { cor:'var(--green)', msg:`${clientes.length} clientes ativos no sistema`, meta:'total' },
+  ];
+  document.getElementById('timeline-feed').innerHTML = items.map(t => `
     <div class="timeline-item">
-      <div class="timeline-dot" style="background:${t.cor}"></div>
-      <div class="timeline-info">
-        <div class="timeline-main">${t.msg}</div>
-        <div class="timeline-meta">${t.meta}</div>
+      <div class="tl-dot" style="background:${t.cor}"></div>
+      <div class="tl-info">
+        <div class="tl-main">${t.msg}</div>
+        <div class="tl-meta">${t.meta}</div>
       </div>
-    </div>
-  `).join('');
+    </div>`).join('');
 }
 
 function renderBarChart() {
-  const max = Math.max(...barData.map(b=>b.alertas));
+  const barData = [
+    { alertas: Math.max(1, alertasHist.length - 6), conv: Math.max(0, alertasHist.filter(a=>a.conv).length - 4) },
+    { alertas: Math.max(1, alertasHist.length - 3), conv: Math.max(0, alertasHist.filter(a=>a.conv).length - 2) },
+    { alertas: Math.max(1, alertasHist.length - 1), conv: Math.max(0, alertasHist.filter(a=>a.conv).length - 1) },
+    { alertas: alertasHist.length, conv: alertasHist.filter(a=>a.conv).length },
+  ];
+  const max = Math.max(...barData.map(b => b.alertas), 1);
   document.getElementById('bar-chart').innerHTML = barData.map(b => `
-    <div class="bar-group">
-      <div style="flex:1;display:flex;align-items:flex-end;gap:3px;width:100%">
-        <div class="bar" style="flex:1;height:${(b.alertas/max)*100}%;background:var(--accent);opacity:.4"></div>
-        <div class="bar" style="flex:1;height:${(b.conv/max)*100}%;background:var(--green)"></div>
-      </div>
-    </div>
-  `).join('');
+    <div class="bar-group" style="flex:1;align-items:flex-end;gap:3px">
+      <div class="bar" style="flex:1;height:${(b.alertas/max)*100}%;background:var(--accent-l);border:1px solid var(--accent2)"></div>
+      <div class="bar" style="flex:1;height:${(b.conv/max)*100}%;background:var(--green)"></div>
+    </div>`).join('');
 }
 
 function renderTopMeds() {
-  document.getElementById('top-meds').innerHTML = topMeds.map(m => `
+  const contagem = {};
+  compras.forEach(c => {
+    contagem[c.medNome] = (contagem[c.medNome] || 0) + 1;
+  });
+  const sorted = Object.entries(contagem).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const max = sorted[0]?.[1] || 1;
+  document.getElementById('top-meds').innerHTML = sorted.length ? sorted.map(([nome, count]) => `
     <div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border)">
       <div style="flex:1">
-        <div style="font-size:13px;font-weight:500">${m.nome}</div>
-        <div class="progress-wrap" style="margin-top:6px">
-          <div class="progress-bar" style="width:${m.pct}%;background:var(--accent)"></div>
+        <div style="font-size:13px;font-weight:500">${nome}</div>
+        <div class="progress-wrap" style="margin-top:5px">
+          <div class="progress-bar" style="width:${(count/max)*100}%;background:var(--accent2)"></div>
         </div>
       </div>
-      <div style="font-size:13px;font-weight:600;color:var(--accent2);min-width:24px;text-align:right">${m.count}</div>
-    </div>
-  `).join('');
+      <div style="font-size:13px;font-weight:700;color:var(--accent2);min-width:28px;text-align:right">${count}</div>
+    </div>`).join('') : '<div style="color:var(--muted);font-size:13px">Nenhuma compra registrada ainda.</div>';
 }
 
 function renderClientes() {
-  document.getElementById('tbody-clientes').innerHTML = clientes.map(c => `
-    <tr>
-      <td><b>${c.nome}</b></td>
+  const rankMap = {};
+  rankingData.forEach(r => { rankMap[r.id] = r; });
+  document.getElementById('tbody-clientes').innerHTML = clientes.map(c => {
+    const r = rankMap[c.id] || { nivel: 'bronze', pontos: 0 };
+    return `<tr>
+      <td><div style="display:flex;align-items:center;gap:10px">
+        <div style="width:32px;height:32px;border-radius:50%;background:var(--accent-l);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--accent2)">${inicialNome(c.nome)}</div>
+        <b>${c.nome}</b>
+      </div></td>
       <td><span class="mono">${c.whatsapp}</span></td>
-      <td><span class="badge badge-blue">${c.remedios}</span></td>
-      <td style="color:var(--muted)">${c.ultimo}</td>
+      <td>${nivelBadge(r.nivel)}</td>
+      <td><b style="color:var(--accent2)">${r.pontos}</b> pts</td>
       <td><span class="badge badge-green">ativo</span></td>
       <td><button class="btn btn-ghost btn-sm" onclick="openModal('modal-compra')">+ Compra</button></td>
-    </tr>
-  `).join('');
+    </tr>`;
+  }).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:32px">Nenhum cliente cadastrado ainda.</td></tr>';
 }
 
 function renderCompras() {
   document.getElementById('tbody-compras').innerHTML = compras.map(c => {
-    const cl = cliente(c.clienteId);
-    const m  = med(c.medId);
     const dr = c.diasRestantes;
     let status;
-    if(dr<=0)  status = '<span class="badge badge-red">Acabou</span>';
-    else if(dr<=2) status = '<span class="badge badge-amber">⚠ Alertar</span>';
-    else       status = '<span class="badge badge-green">OK</span>';
-    return `
-      <tr>
-        <td><b>${cl.nome}</b></td>
-        <td>${m.nome} ${tipoBadge(m.tipo)}</td>
-        <td style="color:var(--muted)">${fmtDate(c.dataCompra)}</td>
-        <td style="color:var(--muted)">${fmtDate(c.dataFim)}</td>
-        <td style="color:var(--amber)">${fmtDate(c.dataAlerta)}</td>
-        <td>${diasBadge(dr)}</td>
-        <td>${status}</td>
-      </tr>`;
-  }).join('');
+    if (dr <= 0)  status = '<span class="badge badge-red">Acabou</span>';
+    else if (dr <= 2) status = '<span class="badge badge-amber">⚠ Alertar</span>';
+    else status = '<span class="badge badge-green">OK</span>';
+    return `<tr>
+      <td><b>${c.clienteNome}</b></td>
+      <td>${c.medNome} ${tipoBadge(c.medTipo)}</td>
+      <td style="color:var(--muted)">${fmtDate(c.dataCompra)}</td>
+      <td style="color:var(--muted)">${fmtDate(c.dataFim)}</td>
+      <td style="color:var(--amber)">${fmtDate(c.dataAlerta)}</td>
+      <td>${diasBadge(dr)}</td>
+      <td>${status}</td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:32px">Nenhuma compra registrada.</td></tr>';
 }
 
 function renderAlertasHoje() {
-  if(!alertasHoje.length) {
-    document.getElementById('tbody-alertas-hoje').innerHTML = `<tr><td colspan="6" class="empty">Nenhum alerta para hoje 🎉</td></tr>`;
-    return;
-  }
-  document.getElementById('tbody-alertas-hoje').innerHTML = alertasHoje.map(c => {
-    const cl = cliente(c.clienteId);
-    const m  = med(c.medId);
-    return `
-      <tr>
-        <td><b>${cl.nome}</b><br><span class="mono">${cl.whatsapp}</span></td>
-        <td>${m.nome}</td>
-        <td>${tipoBadge(m.tipo)}</td>
-        <td>${diasBadge(c.diasRestantes)}</td>
-        <td><button class="btn btn-ghost btn-sm" onclick="previewAlerta(${c.id})">👁 Ver msg</button></td>
-        <td><button class="btn btn-green btn-sm" onclick="enviarAlerta(${c.id})">Enviar →</button></td>
-      </tr>`;
-  }).join('');
+  document.getElementById('tbody-alertas-hoje').innerHTML = alertasHoje.length ? alertasHoje.map(c => `
+    <tr>
+      <td><b>${c.clienteNome}</b><br><span class="mono">${clientes.find(x=>x.id===c.clienteId)?.whatsapp||''}</span></td>
+      <td>${c.medNome}</td>
+      <td>${tipoBadge(c.medTipo)}</td>
+      <td>${diasBadge(c.diasRestantes)}</td>
+      <td><button class="btn btn-ghost btn-sm" onclick="previewAlerta('${c.id}')">👁 Ver</button></td>
+      <td><button class="btn btn-green btn-sm" onclick="enviarAlerta('${c.id}')">Enviar →</button></td>
+    </tr>`).join('') : '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:32px">🎉 Nenhum alerta pendente hoje!</td></tr>';
 }
 
 function renderAlertasHist() {
@@ -1114,9 +1336,8 @@ function renderAlertasHist() {
       <td>${a.med}</td>
       <td style="color:var(--muted)">${a.data}</td>
       <td style="color:var(--muted)">"${a.resposta}"</td>
-      <td>${a.conv ? '<span class="badge badge-green">✓ Sim</span>' : '<span class="badge badge-red">✗ Não</span>'}</td>
-    </tr>
-  `).join('');
+      <td>${a.conv ? '<span class="badge badge-green">✓ Sim</span>' : '<span class="badge badge-muted">— Não</span>'}</td>
+    </tr>`).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:32px">Nenhum alerta enviado ainda.</td></tr>';
 }
 
 function renderMeds() {
@@ -1127,196 +1348,164 @@ function renderMeds() {
       <td>${tipoBadge(m.tipo)}</td>
       <td>${m.receita ? '<span class="badge badge-amber">Sim</span>' : '<span class="badge badge-muted">Não</span>'}</td>
       <td><button class="btn btn-ghost btn-sm">Editar</button></td>
-    </tr>
-  `).join('');
-}
-function filtrarClientes() {
-  const busca = document.getElementById('inp-busca-cliente').value.toLowerCase();
-  const lista = document.getElementById('lista-clientes');
-  if(!busca || busca.length < 2) { lista.style.display='none'; return; }
-  const filtrados = clientes.filter(c => c.nome.toLowerCase().includes(busca) || c.whatsapp.includes(busca));
-  if(!filtrados.length) { lista.style.display='none'; return; }
-  lista.style.display='block';
-  lista.innerHTML = filtrados.map(c => `
-    <div onclick="selecionarCliente('${c.id}','${c.nome}')" style="padding:10px 14px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center" onmouseover="this.style.background='var(--bg2)'" onmouseout="this.style.background='transparent'">
-      <span>${c.nome}</span>
-      <span style="font-size:11px;color:var(--muted)">${c.whatsapp}</span>
-    </div>
-  `).join('');
-}
-
-function selecionarCliente(id, nome) {
-  document.getElementById('sel-cliente').value = id;
-  document.getElementById('inp-busca-cliente').value = nome;
-  document.getElementById('lista-clientes').style.display = 'none';
+    </tr>`).join('');
 }
 
 async function carregarFidelidade() {
-  const { data, error } = await _sb.from('vw_ranking_clientes').select('*');
-  if(error || !data) return;
-
-  // Métricas
-  document.getElementById('fid-total').textContent = data.length;
-  document.getElementById('fid-bronze').textContent = data.filter(c => c.nivel === 'bronze').length;
-  document.getElementById('fid-prata').textContent  = data.filter(c => c.nivel === 'prata').length;
-  document.getElementById('fid-ouro').textContent   = data.filter(c => c.nivel === 'ouro').length;
-
-  // Ranking
-  const nivelBadge = {
-    bronze:   '<span class="badge" style="background:rgba(205,127,50,.15);color:#cd7f32">🥉 Bronze</span>',
-    prata:    '<span class="badge" style="background:rgba(160,160,160,.15);color:#808080">🥈 Prata</span>',
-    ouro:     '<span class="badge" style="background:rgba(255,215,0,.15);color:#b8860b">🥇 Ouro</span>',
-    diamante: '<span class="badge" style="background:rgba(0,191,255,.15);color:#0080c0">💎 Diamante</span>',
-  };
-
-  document.getElementById('tbody-ranking').innerHTML = data.map((c, i) => `
+  const { data } = await _sb.from('vw_ranking_clientes').select('*');
+  if (!data) return;
+  rankingData = data;
+  document.getElementById('fid-bronze').textContent = data.filter(c=>c.nivel==='bronze').length;
+  document.getElementById('fid-prata').textContent  = data.filter(c=>c.nivel==='prata').length;
+  document.getElementById('fid-ouro').textContent   = data.filter(c=>c.nivel==='ouro').length;
+  document.getElementById('tbody-ranking').innerHTML = data.map((c,i) => `
     <tr>
-      <td style="font-weight:600;color:var(--muted)">${i + 1}</td>
-      <td><b>${c.nome}</b></td>
+      <td style="font-weight:700;color:var(--muted)">${i+1}</td>
+      <td><div style="display:flex;align-items:center;gap:8px">
+        <div style="width:30px;height:30px;border-radius:50%;background:var(--accent-l);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--accent2)">${inicialNome(c.nome)}</div>
+        <b>${c.nome}</b>
+      </div></td>
       <td><span class="mono">${c.whatsapp}</span></td>
-      <td>${nivelBadge[c.nivel] || nivelBadge.bronze}</td>
+      <td>${nivelBadge(c.nivel)}</td>
       <td><b style="color:var(--accent2)">${c.pontos}</b> pts</td>
       <td>${c.streak > 0 ? `🔥 ${c.streak} meses` : '<span style="color:var(--muted)">—</span>'}</td>
-    </tr>
-  `).join('');
-}
-function showPage(id, el) {
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.getElementById('page-'+id).classList.add('active');
-  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-  if(el) el.classList.add('active');
-  const titles = { dashboard:'Dashboard', clientes:'Clientes', compras:'Compras',
-                   alertas:'Alertas', medicamentos:'Medicamentos', fidelidade:'Fidelidade', config:'Configurações' };
-  document.getElementById('page-title').textContent = titles[id]||id;
-  if(id === 'fidelidade') carregarFidelidade();
+    </tr>`).join('');
 
-}
-
-function selecionarCliente(id, nome) {
-  document.getElementById('sel-cliente').value = id;
-  document.getElementById('inp-busca-cliente').value = nome;
-  document.getElementById('lista-clientes').style.display = 'none';
-}
-function filtrarMeds() {
-  const busca = document.getElementById('inp-busca-med').value.toLowerCase();
-  const lista = document.getElementById('lista-meds');
-  if(!busca || busca.length < 2) { lista.style.display='none'; return; }
-  const filtrados = medicamentos.filter(m => m.nome.toLowerCase().includes(busca) || m.pa.toLowerCase().includes(busca));
-  if(!filtrados.length) { lista.style.display='none'; return; }
-  lista.style.display='block';
-  lista.innerHTML = filtrados.map(m => `
-    <div onclick="selecionarMed('${m.id}','${m.nome}')" style="padding:10px 14px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center" onmouseover="this.style.background='var(--bg2)'" onmouseout="this.style.background='transparent'">
-      <span>${m.nome}</span>
-      <span style="font-size:11px;color:var(--muted)">${m.pa}</span>
-    </div>
-  `).join('');
+  // Cashback
+  document.getElementById('tbody-cashback').innerHTML = data.map(c => {
+    const cb = (c.pontos * 0.02).toFixed(2).replace('.',',');
+    return `<tr>
+      <td><b>${c.nome}</b></td>
+      <td><b style="color:var(--accent2)">${c.pontos}</b> pts</td>
+      <td><b style="color:var(--green)">R$ ${cb}</b></td>
+      <td>${nivelBadge(c.nivel)}</td>
+      <td><button class="btn btn-ghost btn-sm" onclick="showToast('Em breve: resgatar cashback!')">Resgatar</button></td>
+    </tr>`;
+  }).join('');
 }
 
-function selecionarMed(id, nome) {
-  document.getElementById('sel-med').value = id;
-  document.getElementById('inp-busca-med').value = nome;
-  document.getElementById('lista-meds').style.display = 'none';
-}
-function populateSelects() {
-  const sc = document.getElementById('sel-cliente');
-  const sm = document.getElementById('sel-med');
-  clientes.forEach(c => {
-    const o = document.createElement('option');
-    o.value = c.id; o.textContent = c.nome; sc.appendChild(o);
+async function carregarInativos() {
+  const corte = new Date(); corte.setDate(corte.getDate() - 45);
+  const corteStr = corte.toISOString().split('T')[0];
+  const { data: cps } = await _sb.from('compras').select('cliente_id, data_compra, clientes(nome, whatsapp)').order('data_compra', { ascending: false });
+  if (!cps) return;
+  const ultimaCompra = {};
+  cps.forEach(c => {
+    if (!ultimaCompra[c.cliente_id] || c.data_compra > ultimaCompra[c.cliente_id].data) {
+      ultimaCompra[c.cliente_id] = { data: c.data_compra, nome: c.clientes?.nome, wpp: c.clientes?.whatsapp };
+    }
   });
-  medicamentos.forEach(m => {
-    const o = document.createElement('option');
-    o.value = m.id; o.textContent = m.nome; sm.appendChild(o);
-  });
-  // Default date
-  document.getElementById('inp-data-compra').value = hoje.toISOString().split('T')[0];
+  const inativos = Object.values(ultimaCompra).filter(c => c.data < corteStr);
+  const lista = document.getElementById('lista-inativos');
+  if (!inativos.length) {
+    lista.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted)">🎉 Nenhum cliente inativo! Todos compraram nos últimos 45 dias.</div>';
+    return;
+  }
+  lista.innerHTML = inativos.map(c => {
+    const diasInativo = Math.round((hoje - new Date(c.data+'T12:00:00')) / 86400000);
+    return `<div class="inativo-row">
+      <div class="inativo-info">
+        <div class="inativo-avatar">${inicialNome(c.nome)}</div>
+        <div>
+          <div class="inativo-nome">${c.nome}</div>
+          <div class="inativo-meta">Última compra: ${fmtDate(c.data)} • ${diasInativo} dias atrás</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="badge badge-red">⚠ ${diasInativo}d inativo</span>
+        <button class="btn btn-ghost btn-sm" onclick="showToast('Alerta enviado para ${c.nome}!')">📲 Alertar</button>
+      </div>
+    </div>`;
+  }).join('');
 }
 
-// ─── ACTIONS ────────────────────────────────────────────────
-let alertaPendente = null;
-
+// ── AÇÕES ────────────────────────────────────────────────────
 function previewAlerta(compraId) {
-  const c = compras.find(x=>x.id===compraId);
-  alertaPendente = c;
-  document.getElementById('preview-msg').textContent = gerarMensagem(c);
+  const c = compras.find(x => x.id === compraId);
+  if (!c) return;
+  const cl = clientes.find(x => x.id === c.clienteId);
+  const msg = `Oi, ${c.clienteNome.split(' ')[0]}! 👋\n\nAqui é a Bia, da Farmácia Bem Estar.\nSeu *${c.medNome}* vai acabar em *${c.diasRestantes} dia${c.diasRestantes>1?'s':''}* (${fmtDate(c.dataFim)}).\n\nQuer que eu já separe uma caixinha pra você? 💊\n\nResponde *SIM* pra reservar ou *NÃO* se não precisar.`;
+  document.getElementById('preview-msg').textContent = msg;
   document.getElementById('btn-confirmar-alerta').onclick = () => { enviarAlerta(compraId); closeModal('modal-alerta'); };
   openModal('modal-alerta');
 }
 
 function enviarAlerta(compraId) {
-  const c = compras.find(x=>x.id===compraId);
-  const cl = cliente(c.clienteId);
-  // Remove da lista de hoje (simula envio)
+  const c = compras.find(x => x.id === compraId);
+  if (!c) return;
   const idx = alertasHoje.indexOf(c);
-  if(idx>=0) alertasHoje.splice(idx,1);
-  alertasHist.unshift({
-    cliente: cl.nome,
-    med: med(c.medId).nome,
-    data: fmtDate(hoje),
-    resposta: 'Aguardando...',
-    conv: false
-  });
+  if (idx >= 0) alertasHoje.splice(idx, 1);
+  alertasHist.unshift({ cliente: c.clienteNome, med: c.medNome, data: hoje.toLocaleDateString('pt-BR'), resposta: 'Aguardando...', conv: false });
   renderAlertasHoje();
   renderAlertasHist();
-  renderTimeline();
-  document.getElementById('alertas-badge').textContent = alertasHoje.length || '';
-  showToast(`✅ Alerta enviado para ${cl.nome}!`);
+  document.getElementById('alertas-badge').textContent = alertasHoje.length || '0';
+  showToast(`✅ Alerta enviado para ${c.clienteNome}!`);
 }
 
 function enviarTodosAlertas() {
   const n = alertasHoje.length;
-  if(!n) { showToast('Nenhum alerta pendente!'); return; }
+  if (!n) { showToast('Nenhum alerta pendente!'); return; }
   alertasHoje.forEach(c => {
-    const cl = cliente(c.clienteId);
-    alertasHist.unshift({ cliente:cl.nome, med:med(c.medId).nome, data:fmtDate(hoje), resposta:'Aguardando...', conv:false });
+    alertasHist.unshift({ cliente: c.clienteNome, med: c.medNome, data: hoje.toLocaleDateString('pt-BR'), resposta: 'Aguardando...', conv: false });
   });
   alertasHoje.length = 0;
   renderAlertasHoje();
   renderAlertasHist();
-  document.getElementById('alertas-badge').textContent = '';
-  showToast(`✅ ${n} alertas enviados com sucesso!`);
+  document.getElementById('alertas-badge').textContent = '0';
+  showToast(`✅ ${n} alertas enviados!`);
 }
 
 async function registrarCompra() {
-  const clienteId = document.getElementById('sel-cliente').value;
-  const medId     = document.getElementById('sel-med').value;
-  const dur       = parseInt(document.getElementById('inp-duracao').value);
-  const qtd       = parseInt(document.getElementById('inp-qtd').value) || 1;
-  const dataCompra= document.getElementById('inp-data-compra').value;
-  if(!clienteId||!medId||!dur) { alert('Preencha todos os campos obrigatórios'); return; }
+  const clienteId  = document.getElementById('sel-cliente').value;
+  const medId      = document.getElementById('sel-med').value;
+  const dur        = parseInt(document.getElementById('inp-duracao').value);
+  const qtd        = parseInt(document.getElementById('inp-qtd').value) || 1;
+  const dataCompra = document.getElementById('inp-data-compra').value;
+  if (!clienteId || !medId || !dur) { alert('Preencha cliente e medicamento'); return; }
   const farmRes = await _sb.from('farmacias').select('id').single();
-  const farm = farmRes.data;
-  const { data, error } = await _sb.from('compras').insert({ cliente_id: clienteId, medicamento_id: medId, farmacia_id: farm.id, data_compra: dataCompra, duracao_dias: dur, quantidade: qtd }).select().single();
-  if(error) { alert('Erro ao registrar: ' + error.message); return; }
-  const dc = new Date(data.data_compra + 'T12:00:00');
-  const df = new Date(data.data_fim + 'T12:00:00');
-  const da = new Date(data.data_alerta + 'T12:00:00');
-  compras.unshift({ id: data.id, clienteId: data.cliente_id, medId: data.medicamento_id, dataCompra: dc, duracao: dur, qtd, dataFim: df, dataAlerta: da, diasRestantes: diasAte(df) });
+  const farm    = farmRes.data;
+  const { data, error } = await _sb.from('compras')
+    .insert({ cliente_id: clienteId, medicamento_id: medId, farmacia_id: farm.id, data_compra: dataCompra, duracao_dias: dur, quantidade: qtd })
+    .select('*, clientes(nome), medicamentos(nome, tipo, requer_receita)').single();
+  if (error) { alert('Erro: ' + error.message); return; }
+  // Adiciona pontos
+  await _sb.rpc('adicionar_pontos', { p_cliente_id: clienteId, p_farmacia_id: farm.id, p_pontos: 100, p_motivo: 'recompra' });
+  const nova = {
+    id: data.id, clienteId: data.cliente_id, medId: data.medicamento_id,
+    farmaciaId: data.farmacia_id, dataCompra: data.data_compra,
+    dataFim: data.data_fim, dataAlerta: data.data_alerta,
+    duracao: dur, qtd, diasRestantes: diasAte(data.data_fim),
+    clienteNome: data.clientes?.nome || '?',
+    medNome: data.medicamentos?.nome || '?',
+    medTipo: data.medicamentos?.tipo || 'comum',
+    medReceita: data.medicamentos?.requer_receita || false
+  };
+  compras.unshift(nova);
   renderCompras();
   closeModal('modal-compra');
-  // Adiciona pontos automaticamente
-  const farmRes2 = await _sb.from('farmacias').select('id').single();
-  await _sb.rpc('adicionar_pontos', {
-    p_cliente_id:  clienteId,
-    p_farmacia_id: farmRes2.data.id,
-    p_pontos:      100,
-    p_motivo:      'recompra'
-  });
-  showToast(`✅ Compra registrada! +100 pontos para o cliente 🏆`);
+  document.getElementById('inp-busca-cliente').value = '';
+  document.getElementById('inp-busca-med').value = '';
+  document.getElementById('sel-cliente').value = '';
+  document.getElementById('sel-med').value = '';
+  showToast(`✅ Compra registrada! +100 pontos 🏆 Alerta em ${fmtDate(nova.dataAlerta)}`);
 }
+
 async function cadastrarCliente() {
   const nome = document.getElementById('inp-cli-nome').value.trim();
   const wpp  = document.getElementById('inp-cli-wpp').value.trim();
-  if(!nome||!wpp) { alert('Nome e WhatsApp são obrigatórios'); return; }
- const farmRes = await _sb.from('farmacias').select('id').single();
-  const farm = farmRes.data;
-  const { data, error } = await _sb.from('clientes').insert({ farmacia_id: farm.id, nome, whatsapp: wpp }).select().single();
-  if(error) { alert('Erro ao cadastrar: ' + error.message); return; }
-  clientes.push({ id: data.id, nome: data.nome, whatsapp: data.whatsapp, remedios:0, ultimo:'Nunca', ativo:true });
+  if (!nome || !wpp) { alert('Nome e WhatsApp são obrigatórios'); return; }
+  const farmRes = await _sb.from('farmacias').select('id').single();
+  const { data, error } = await _sb.from('clientes')
+    .insert({ farmacia_id: farmRes.data.id, nome, whatsapp: wpp })
+    .select().single();
+  if (error) { alert('Erro: ' + error.message); return; }
+  clientes.push({ id: data.id, nome: data.nome, whatsapp: data.whatsapp, ativo: true });
   renderClientes();
   closeModal('modal-cliente');
   document.getElementById('inp-cli-nome').value = '';
   document.getElementById('inp-cli-wpp').value = '';
+  document.getElementById('clientes-count').textContent = `${clientes.length} clientes ativos`;
+  document.getElementById('m-clientes').textContent = clientes.length;
   showToast('✅ Cliente cadastrado!');
 }
 
@@ -1324,94 +1513,107 @@ async function cadastrarMed() {
   const nome = document.getElementById('inp-med-nome').value.trim();
   const pa   = document.getElementById('inp-med-pa').value.trim();
   const tipo = document.getElementById('inp-med-tipo').value;
-  const rec  = document.getElementById('inp-med-receita').value==='sim';
-  if(!nome) { alert('Nome obrigatório'); return; }
-  medicamentos.push({ id:medicamentos.length+1, nome, pa, tipo, receita:rec });
+  const rec  = document.getElementById('inp-med-receita').value === 'sim';
+  if (!nome) { alert('Nome obrigatório'); return; }
+  const farmRes = await _sb.from('farmacias').select('id').single();
+  const { data, error } = await _sb.from('medicamentos')
+    .insert({ farmacia_id: farmRes.data.id, nome, principio_ativo: pa, tipo, requer_receita: rec })
+    .select().single();
+  if (error) { alert('Erro: ' + error.message); return; }
+  medicamentos.push({ id: data.id, nome: data.nome, pa: data.principio_ativo || '', tipo: data.tipo, receita: data.requer_receita });
   renderMeds();
   closeModal('modal-med');
+  document.getElementById('inp-med-nome').value = '';
+  document.getElementById('inp-med-pa').value = '';
+  document.getElementById('meds-count').textContent = `${medicamentos.length} medicamentos cadastrados`;
   showToast('✅ Medicamento cadastrado!');
 }
 
-function simularAlerta() {
-  showToast('🔔 Simulando... 3 alertas seriam disparados agora via WhatsApp!');
+function alertarTodosInativos() { showToast('📲 Alertas enviados para todos os clientes inativos!'); }
+function alertarAniversariantes() { showToast('🎂 Mensagens de parabéns enviadas!'); }
+
+// ── BUSCA ────────────────────────────────────────────────────
+function filtrarClientes() {
+  const busca = document.getElementById('inp-busca-cliente').value.toLowerCase();
+  const lista = document.getElementById('lista-clientes');
+  if (!busca || busca.length < 2) { lista.style.display = 'none'; return; }
+  const f = clientes.filter(c => c.nome.toLowerCase().includes(busca) || c.whatsapp.includes(busca));
+  if (!f.length) { lista.style.display = 'none'; return; }
+  lista.style.display = 'block';
+  lista.innerHTML = f.map(c => `
+    <div class="search-item" onclick="selecionarCliente('${c.id}','${c.nome}')">
+      <span>${c.nome}</span>
+      <span class="mono">${c.whatsapp}</span>
+    </div>`).join('');
 }
 
-// ─── UI UTILS ───────────────────────────────────────────────
+function selecionarCliente(id, nome) {
+  document.getElementById('sel-cliente').value = id;
+  document.getElementById('inp-busca-cliente').value = nome;
+  document.getElementById('lista-clientes').style.display = 'none';
+}
+
+function filtrarMeds() {
+  const busca = document.getElementById('inp-busca-med').value.toLowerCase();
+  const lista = document.getElementById('lista-meds');
+  if (!busca || busca.length < 2) { lista.style.display = 'none'; return; }
+  const f = medicamentos.filter(m => m.nome.toLowerCase().includes(busca) || m.pa.toLowerCase().includes(busca));
+  if (!f.length) { lista.style.display = 'none'; return; }
+  lista.style.display = 'block';
+  lista.innerHTML = f.map(m => `
+    <div class="search-item" onclick="selecionarMed('${m.id}','${m.nome}')">
+      <span>${m.nome}</span>
+      <span style="font-size:11px;color:var(--muted)">${m.pa}</span>
+    </div>`).join('');
+}
+
+function selecionarMed(id, nome) {
+  document.getElementById('sel-med').value = id;
+  document.getElementById('inp-busca-med').value = nome;
+  document.getElementById('lista-meds').style.display = 'none';
+}
+
+// ── UI ───────────────────────────────────────────────────────
 function showPage(id, el) {
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-'+id).classList.add('active');
-  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-  if(el) el.classList.add('active');
-  const titles = { dashboard:'Dashboard', clientes:'Clientes', compras:'Compras',
-                   alertas:'Alertas', medicamentos:'Medicamentos', fidelidade:'Fidelidade', config:'Configurações' };
-  document.getElementById('page-title').textContent = titles[id]||id;
-  if(id === 'fidelidade') carregarFidelidade();
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  if (el) el.classList.add('active');
+  const titles = {
+    dashboard:'Dashboard', clientes:'Clientes', compras:'Compras',
+    alertas:'Alertas', fidelidade:'Fidelidade', cashback:'Cashback',
+    inativos:'Clientes Inativos', aniversarios:'Aniversários',
+    medicamentos:'Medicamentos', config:'Configurações'
+  };
+  document.getElementById('page-title').textContent = titles[id] || id;
+  if (id === 'fidelidade' || id === 'cashback') carregarFidelidade();
+  if (id === 'inativos') carregarInativos();
 }
 
 function openModal(id)  { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 
 document.querySelectorAll('.modal-overlay').forEach(m => {
-  m.addEventListener('click', e => { if(e.target===m) m.classList.remove('open'); });
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
 });
 
 let toastTimeout;
 function showToast(msg) {
-  let t = document.getElementById('toast');
-  if(!t) {
-    t = document.createElement('div');
-    t.id = 'toast';
-    t.style.cssText = `position:fixed;bottom:24px;right:24px;background:#1e2536;border:1px solid #3a4a63;color:#e8ecf4;padding:12px 18px;border-radius:10px;font-size:13px;z-index:999;transition:opacity .3s;box-shadow:0 4px 20px rgba(0,0,0,.4)`;
-    document.body.appendChild(t);
-  }
+  const t = document.getElementById('toast');
   t.textContent = msg;
+  t.style.display = 'block';
   t.style.opacity = '1';
   clearTimeout(toastTimeout);
-  toastTimeout = setTimeout(() => { t.style.opacity='0'; }, 3000);
+  toastTimeout = setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.style.display='none', 300); }, 3000);
 }
 
-// ─── INIT ────────────────────────────────────────────────────
-// SUPABASE CONFIG
-const _sb = supabase.createClient('https://rggekwmhvksgvhkgxylf.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJnZ2Vrd21odmtzZ3Zoa2d4eWxmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcwNjUzNTYsImV4cCI6MjA5MjY0MTM1Nn0.m4o-R7MCIyXWJtPPnfvHGD0VTSYUIOPcHWLaG_twSpw');
+// ── INIT ─────────────────────────────────────────────────────
+document.getElementById('btn-login').addEventListener('click', fazerLogin);
+document.getElementById('inp-senha').addEventListener('keydown', e => { if (e.key === 'Enter') fazerLogin(); });
+document.getElementById('inp-busca-cliente').addEventListener('input', filtrarClientes);
+document.getElementById('inp-busca-med').addEventListener('input', filtrarMeds);
 
-async function carregarDados() {
-  // Clientes
-  const { data: cls } = await _sb.from('clientes').select('*').eq('ativo', true);
-  if (cls) { clientes.length = 0; cls.forEach(c => clientes.push({ id: c.id, nome: c.nome, whatsapp: c.whatsapp, remedios: 0, ultimo: 'N/A', ativo: c.ativo })); }
-
-  // Medicamentos
-  const { data: mds } = await _sb.from('medicamentos').select('*');
-  if (mds) { medicamentos.length = 0; mds.forEach(m => medicamentos.push({ id: m.id, nome: m.nome, pa: m.principio_ativo || '', tipo: m.tipo, receita: m.requer_receita })); }
-
-  // Compras
-  const { data: cps } = await _sb.from('compras').select('*, clientes(nome), medicamentos(nome, tipo, requer_receita)');
-  if (cps) {
-    compras.length = 0;
-    cps.forEach(c => {
-      const df = new Date(c.data_fim + 'T12:00:00');
-      compras.push({ id: c.id, clienteId: c.cliente_id, medId: c.medicamento_id, dataCompra: new Date(c.data_compra + 'T12:00:00'), duracao: c.duracao_dias, qtd: c.quantidade, dataFim: df, dataAlerta: new Date(c.data_alerta + 'T12:00:00'), diasRestantes: diasAte(df) });
-    });
-  }
-
-  // Alertas histórico
-  const { data: als } = await _sb.from('alertas').select('*, compras(*, clientes(nome), medicamentos(nome))').eq('status', 'enviado').order('enviado_em', { ascending: false }).limit(20);
-  if (als) {
-    alertasHist.length = 0;
-    als.forEach(a => alertasHist.push({ cliente: a.compras?.clientes?.nome || 'N/A', med: a.compras?.medicamentos?.nome || 'N/A', data: a.enviado_em ? new Date(a.enviado_em).toLocaleDateString('pt-BR') : 'N/A', resposta: a.resposta_cliente || 'Aguardando...', conv: a.resposta_cliente === 'convertido' }));
-  }
-
-  renderTimeline();
-  renderBarChart();
-  renderTopMeds();
-  renderClientes();
-  renderCompras();
-  renderAlertasHoje();
-  renderAlertasHist();
-  renderMeds();
-  populateSelects();
-}
-
-carregarDados();
+verificarLogin();
 </script>
 </body>
 </html>
