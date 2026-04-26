@@ -753,7 +753,7 @@
     <div class="modal-body">
       <div class="field">
         <label>Cliente</label>
-        <input type="text" id="inp-busca-cliente" placeholder="Digite o nome do cliente..." autocomplete="off" oninput="filtrarClientes()">
+        <input type="text" id="inp-busca-cliente" placeholder="Digite o nome do cliente..." autocomplete="off">
 <div id="lista-clientes" style="display:none;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;max-height:200px;overflow-y:auto;margin-top:4px"></div>
 <input type="hidden" id="sel-cliente">
       </div>
@@ -904,6 +904,8 @@ function verificarLogin() {
   }
 }
 
+document.getElementById('inp-busca-cliente').addEventListener('input', filtrarClientes);
+document.getElementById('inp-busca-med').addEventListener('input', filtrarMeds);
 document.getElementById('btn-login').addEventListener('click', fazerLogin);
 document.getElementById('inp-senha').addEventListener('keydown', function(e) {
   if(e.key === 'Enter') fazerLogin();
@@ -1128,6 +1130,26 @@ function renderMeds() {
     </tr>
   `).join('');
 }
+function filtrarClientes() {
+  const busca = document.getElementById('inp-busca-cliente').value.toLowerCase();
+  const lista = document.getElementById('lista-clientes');
+  if(!busca || busca.length < 2) { lista.style.display='none'; return; }
+  const filtrados = clientes.filter(c => c.nome.toLowerCase().includes(busca) || c.whatsapp.includes(busca));
+  if(!filtrados.length) { lista.style.display='none'; return; }
+  lista.style.display='block';
+  lista.innerHTML = filtrados.map(c => `
+    <div onclick="selecionarCliente('${c.id}','${c.nome}')" style="padding:10px 14px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center" onmouseover="this.style.background='var(--bg2)'" onmouseout="this.style.background='transparent'">
+      <span>${c.nome}</span>
+      <span style="font-size:11px;color:var(--muted)">${c.whatsapp}</span>
+    </div>
+  `).join('');
+}
+
+function selecionarCliente(id, nome) {
+  document.getElementById('sel-cliente').value = id;
+  document.getElementById('inp-busca-cliente').value = nome;
+  document.getElementById('lista-clientes').style.display = 'none';
+}
 
 async function carregarFidelidade() {
   const { data, error } = await _sb.from('vw_ranking_clientes').select('*');
@@ -1272,7 +1294,15 @@ async function registrarCompra() {
   compras.unshift({ id: data.id, clienteId: data.cliente_id, medId: data.medicamento_id, dataCompra: dc, duracao: dur, qtd, dataFim: df, dataAlerta: da, diasRestantes: diasAte(df) });
   renderCompras();
   closeModal('modal-compra');
-  showToast(`✅ Compra registrada! Alerta programado para ${fmtDate(da)}`);
+  // Adiciona pontos automaticamente
+  const farmRes2 = await _sb.from('farmacias').select('id').single();
+  await _sb.rpc('adicionar_pontos', {
+    p_cliente_id:  clienteId,
+    p_farmacia_id: farmRes2.data.id,
+    p_pontos:      100,
+    p_motivo:      'recompra'
+  });
+  showToast(`✅ Compra registrada! +100 pontos para o cliente 🏆`);
 }
 async function cadastrarCliente() {
   const nome = document.getElementById('inp-cli-nome').value.trim();
@@ -1313,8 +1343,9 @@ function showPage(id, el) {
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   if(el) el.classList.add('active');
   const titles = { dashboard:'Dashboard', clientes:'Clientes', compras:'Compras',
-                   alertas:'Alertas', medicamentos:'Medicamentos', config:'Configurações' };
+                   alertas:'Alertas', medicamentos:'Medicamentos', fidelidade:'Fidelidade', config:'Configurações' };
   document.getElementById('page-title').textContent = titles[id]||id;
+  if(id === 'fidelidade') carregarFidelidade();
 }
 
 function openModal(id)  { document.getElementById(id).classList.add('open'); }
